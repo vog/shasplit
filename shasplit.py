@@ -93,7 +93,7 @@ def main():
         check_name(s)
         return s
     parser = argparse.ArgumentParser()
-    parser.add_argument('name', type=name, help='name of directory for hashed parts')
+    parser.add_argument('-n', '--name', type=name, help='split data into the named directory')
     parser.add_argument('-o', '--outputdir', default='.', help='base output directory')
     parser.add_argument('-b', '--blocksize', default=64*1024, type=blocksize, help='set block size')
     parser.add_argument('-a', '--algorithm', default='sha1', choices=hashlib.algorithms, help='set hash algorithm')
@@ -104,8 +104,12 @@ def main():
     else:
         logging.basicConfig(level=logging.INFO, format='%(message)s')
     logging.debug('Received arguments %r', args)
-    logging.info('Reading from stdin, writing to %r', args.outputdir)
-    shasplit(sys.stdin, args.name, args.outputdir, args.blocksize, args.algorithm)
+    if args.name is None:
+        parser.print_help()
+        sys.exit(1)
+    if args.name is not None:
+        logging.info('Reading from stdin')
+        shasplit(sys.stdin, args.name, args.outputdir, args.blocksize, args.algorithm)
     sys.exit(0)
 
 if __name__ == '__main__':
