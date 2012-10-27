@@ -59,6 +59,11 @@ def shasplit(input_io, name, outputdir, blocksize, algorithm):
             break
         hexdigest = hashlib.new(algorithm, block).hexdigest()
         hash_total.update(block)
+        logging.debug('Part %s: Creating symlink', part)
+        part_filename = os.path.join(namedir_tmp, 'part_' + part)
+        part_filename_tmp = os.path.join(outputdir, '_tmp_' + str(uuid.uuid4()))
+        os.symlink(os.path.join('..', os.path.basename(datadir), hexdigest), part_filename_tmp)
+        os.rename(part_filename_tmp, part_filename)
         data_filename = os.path.join(datadir, hexdigest)
         if os.path.exists(data_filename):
             logging.debug('Part %s: Skipping existing data file %r', part, data_filename)
@@ -68,11 +73,6 @@ def shasplit(input_io, name, outputdir, blocksize, algorithm):
             with open(data_filename_tmp, 'wb') as f:
                 f.write(block)
             os.rename(data_filename_tmp, data_filename)
-        logging.debug('Part %s: Creating symlink', part)
-        part_filename = os.path.join(namedir_tmp, 'part_' + part)
-        part_filename_tmp = os.path.join(outputdir, '_tmp_' + str(uuid.uuid4()))
-        os.symlink(os.path.join('..', os.path.basename(datadir), hexdigest), part_filename_tmp)
-        os.rename(part_filename_tmp, part_filename)
     hexdigest_total = hash_total.hexdigest()
     logging.debug('Creating hash file containing %s', hexdigest_total)
     hash_filename = os.path.join(namedir_tmp, 'hash')
