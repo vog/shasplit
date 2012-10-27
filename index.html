@@ -1,0 +1,39 @@
+<!doctype html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+    <title>Shasplit – SHA-based data splitting for efficient backups</title>
+  </head>
+  <body>
+    <h1>Shasplit – SHA-based data splitting for efficient backups</h1>
+    <p>
+        Shasplit takes a large data block, splits it into smaller parts,
+        and puts those into an SHA-based content-addressed store.
+        Reassembling those parts is as trivial as a <tt>cat</tt> operation.
+        Repeating parts (e.g. from previous split operations)
+        are stored only once,
+        which allows for efficient incremental backups
+        of whole LVM snapshots via Rsync.
+        Shasplit shows its strengths on encrypted block devices,
+        but might be useful for non-encrypted data, too.
+    </p>
+    <h2>Installation</h2>
+    <pre>cd /opt
+git clone <a href="https://github.com/vog/shasplit">https://github.com/vog/shasplit.git</a>
+ln -s /opt/shasplit/shasplit.py /usr/bin/shasplit</pre>
+    <h2>Usage</h2>
+    <p>Preparing the snapshot of a whole LVM logical volume for efficient backup via Rsync:</p>
+    <pre>shasplit -o /backup mysystem &lt; /dev/vg0/mysystem_snapshot
+rsync -aW --delete-after /backup/ backupserver:/backup/</pre>
+    <p>Restoring the data doesn't require any advanced tools:</p>
+    <pre>cat /backup/mysystem/part_* &gt; /dev/vg0/mysystem</pre>
+    <p>Have fun!</p>
+    <h2>Related Projects</h2>
+    <ul>
+      <li><a href="https://github.com/vog/scs">Scs</a></li>
+      <li><a href="http://vog.github.com/bscp/">Bscp</a></li>
+      <li><a href="http://www.bouncybouncy.net/programs/blocksync.py">blocksync.py</a></li>
+      <li><a href="http://theshed.hezmatt.org/lvmsync/">lvmsync</a></li>
+    </ul>
+  </body>
+</html>
