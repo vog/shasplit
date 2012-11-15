@@ -34,9 +34,14 @@ def check_name(name):
     if name[0] in '._':
         raise TypeError('Name must not start with "." or "_"')
 
+def check_blocksize(blocksize):
+    if not (blocksize > 0):
+        raise TypeError('Block size is not positive')
+
 def shasplit(input_io, name, outputdir, blocksize, algorithm):
     '''Split data from input_io into hashed parts'''
     check_name(name)
+    check_blocksize(name)
     hash_total = hashlib.new(algorithm)
     if not os.path.exists(outputdir):
         raise RuntimeError('Directory %r does not exist' % (outputdir,))
@@ -86,8 +91,7 @@ def main():
     '''Run command line tool'''
     def blocksize(s):
         i = int(s)
-        if not (i > 0):
-            raise TypeError('Block size is not positive')
+        check_blocksize(i)
         return i
     def name(s):
         check_name(s)
