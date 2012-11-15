@@ -36,7 +36,7 @@ def check_name(name):
 
 def check_blocksize(blocksize):
     if not (blocksize > 0):
-        raise TypeError('Block size is not positive')
+        raise TypeError('Block size must be positive')
 
 def shasplit(input_io, name, outputdir, blocksize, algorithm):
     '''Split data from input_io into hashed parts'''
