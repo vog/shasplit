@@ -22,11 +22,11 @@
 git clone <a href="https://github.com/vog/shasplit">https://github.com/vog/shasplit.git</a>
 ln -s /opt/shasplit/shasplit.py /usr/bin/shasplit</pre>
     <h2>Usage</h2>
-    <p>Preparing the snapshot of a whole LVM logical volume for efficient backup via Rsync:</p>
-    <pre>shasplit -o /backup mysystem &lt; /dev/vg0/mysystem_snapshot
+    <p>Preparing the snapshot of a whole LVM logical volume <em>foobar</em> for efficient backup via Rsync:</p>
+    <pre>shasplit -o /backup foobar &lt; /dev/vg0/foobar_snapshot
 rsync -aW --delete-after /backup/ backupserver:/backup/</pre>
     <p>Restoring the data doesn't require any advanced tools:</p>
-    <pre>cat /backup/mysystem/part_* &gt; /dev/vg0/mysystem</pre>
+    <pre>cat /backup/foobar/part_* &gt; /dev/vg0/foobar</pre>
     <p>Have fun!</p>
     <h2>Related Projects</h2>
     <ul>
