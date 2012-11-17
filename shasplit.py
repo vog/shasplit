@@ -53,11 +53,11 @@ def shasplit(input_io, name, outputdir, blocksize, algorithm):
     os.mkdir(namedir_tmp)
     if not os.path.exists(datadir):
         os.mkdir(datadir)
-    partnr = 0
-    while True:
-        partnr += 1
-        part = '%05i' % (partnr)
-        if len(part) != 5:
+    part_start = 1
+    part_len = 5
+    for partnr in xrange(part_start, 10**part_len + 1):
+        part = str(partnr).rjust(part_len, '0')
+        if len(part) != part_len:
             raise RuntimeError('Too many parts')
         block = input_io.read(blocksize)
         if len(block) == 0:
