@@ -108,13 +108,13 @@ def main():
     else:
         logging.basicConfig(level=logging.INFO, format='%(message)s')
     logging.debug('Received arguments %r', args)
-    if args.name is None:
-        parser.print_help()
-        sys.exit(1)
     if args.name is not None:
         logging.info('Reading from stdin')
         shasplit(sys.stdin, args.name, args.outputdir, args.blocksize, args.algorithm)
-    sys.exit(0)
+        sys.exit(0)
+    else:
+        parser.print_help()
+        sys.exit(1)
 
 if __name__ == '__main__':
     main()
