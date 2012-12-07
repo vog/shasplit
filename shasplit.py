@@ -87,6 +87,9 @@ def shasplit(input_io, name, outputdir, blocksize, algorithm):
     os.rename(hash_filename_tmp, hash_filename)
     os.rename(namedir_tmp, namedir)
 
+def clean(outputdir):
+    raise NotImplementedError()
+
 def main():
     '''Run command line tool'''
     def blocksize(s):
@@ -98,6 +101,7 @@ def main():
         return s
     parser = argparse.ArgumentParser()
     parser.add_argument('-n', '--name', type=name, help='split data into the named directory')
+    parser.add_argument('-c', '--clean', action='store_true', help='remove orphaned data parts and old temporary files')
     parser.add_argument('-o', '--outputdir', default='.', help='base output directory')
     parser.add_argument('-b', '--blocksize', default=64*1024, type=blocksize, help='set block size')
     parser.add_argument('-a', '--algorithm', default='sha1', choices=hashlib.algorithms, help='set hash algorithm')
@@ -112,6 +116,8 @@ def main():
         logging.info('Reading from stdin')
         shasplit(sys.stdin, args.name, args.outputdir, args.blocksize, args.algorithm)
         sys.exit(0)
+    elif args.clean:
+        clean(args.outputdir)
     else:
         parser.print_help()
         sys.exit(1)
