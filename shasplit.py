@@ -116,11 +116,11 @@ def main():
         logging.info('Reading from stdin')
         shasplit(sys.stdin, args.name, args.outputdir, args.blocksize, args.algorithm)
         sys.exit(0)
-    elif args.clean:
+    if args.clean:
         clean(args.outputdir)
-    else:
-        parser.print_help()
-        sys.exit(1)
+        sys.exit(0)
+    parser.print_help()
+    sys.exit(1)
 
 if __name__ == '__main__':
     main()
