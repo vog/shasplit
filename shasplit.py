@@ -38,6 +38,12 @@ def check_maxbackups(maxbackups):
     if not (maxbackups > 0):
         raise TypeError('Maximum number of backups must be positive')
 
+def check_volumegroup(volumegroup):
+    if len(volumegroup) < 1:
+        raise TypeError('Volume group must not be empty')
+    if os.path.dirname(volumegroup) != '':
+        raise TypeError(r'Volume group must not have a directory component')
+
 def check_blocksize(blocksize):
     if not (blocksize > 0):
         raise TypeError('Block size must be positive')
@@ -105,6 +111,10 @@ def backup(maxbackups, do_clean, input_io, name, outputdir, blocksize, algorithm
     if do_clean:
         clean(outputdir)
 
+def backup_lvm(volumegroup, maxbackups, do_clean, name, outputdir, blocksize, algorithm):
+    check_volumegroup(volumegroup)
+    raise NotImplementedError()
+
 def main():
     '''Run command line tool'''
     def name(s):
@@ -114,6 +124,9 @@ def main():
         i = int(s)
         check_maxbackups(i)
         return i
+    def volumegroup(s):
+        check_volumegroup(s)
+        return s
     def blocksize(s):
         i = int(s)
         check_blocksize(i)
@@ -121,6 +134,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-n', '--name', type=name, help='split data into the named directory')
     parser.add_argument('-m', '--maxbackups', type=maxbackups, help='maximum number of backups to keep')
+    parser.add_argument('-g', '--volumegroup', type=volumegroup, help='volume group for automatic LVM snapshot')
     parser.add_argument('-c', '--clean', action='store_true', help='remove orphaned data parts and old temporary files')
     parser.add_argument('-x', '--check', action='store_true', help='check output directory for consistency')
     parser.add_argument('-o', '--outputdir', default='.', help='base output directory')
@@ -136,7 +150,10 @@ def main():
     if args.check:
         if not check(args.outputdir, args.algorithm):
             sys.exit(1)
-    if args.name is not None:
+    if args.name is not None and args.volumegroup is not None:
+        backup_lvm(args.volumegroup, args.maxbackups, args.clean, args.name, args.outputdir, args.blocksize, args.algorithm)
+        sys.exit(0)
+    if args.name is not None and args.volumegroup is None:
         logging.info('Reading from stdin')
         backup(args.maxbackups, args.clean, sys.stdin, args.name, args.outputdir, args.blocksize, args.algorithm)
         sys.exit(0)
