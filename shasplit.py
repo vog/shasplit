@@ -95,13 +95,13 @@ def check(outputdir, algorithm):
 
 def main():
     '''Run command line tool'''
+    def name(s):
+        check_name(s)
+        return s
     def blocksize(s):
         i = int(s)
         check_blocksize(i)
         return i
-    def name(s):
-        check_name(s)
-        return s
     parser = argparse.ArgumentParser()
     parser.add_argument('-n', '--name', type=name, help='split data into the named directory')
     parser.add_argument('-c', '--clean', action='store_true', help='remove orphaned data parts and old temporary files')
