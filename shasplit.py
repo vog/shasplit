@@ -34,6 +34,10 @@ def check_name(name):
     if name[0] in '._':
         raise TypeError('Name must not start with "." or "_"')
 
+def check_maxbackups(maxbackups):
+    if not (maxbackups > 0):
+        raise TypeError('Maximum number of backups must be positive')
+
 def check_blocksize(blocksize):
     if not (blocksize > 0):
         raise TypeError('Block size must be positive')
@@ -93,17 +97,30 @@ def clean(outputdir):
 def check(outputdir, algorithm):
     raise NotImplementedError()
 
+def backup(maxbackups, do_clean, input_io, name, outputdir, blocksize, algorithm):
+    if maxbackups is not None:
+        check_maxbackups(maxbackups)
+        raise NotImplementedError()
+    shasplit(input_io, name, outputdir, blocksize, algorithm)
+    if do_clean:
+        clean(outputdir)
+
 def main():
     '''Run command line tool'''
     def name(s):
         check_name(s)
         return s
+    def maxbackups(s):
+        i = int(s)
+        check_maxbackups(i)
+        return i
     def blocksize(s):
         i = int(s)
         check_blocksize(i)
         return i
     parser = argparse.ArgumentParser()
     parser.add_argument('-n', '--name', type=name, help='split data into the named directory')
+    parser.add_argument('-m', '--maxbackups', type=maxbackups, help='maximum number of backups to keep')
     parser.add_argument('-c', '--clean', action='store_true', help='remove orphaned data parts and old temporary files')
     parser.add_argument('-x', '--check', action='store_true', help='check output directory for consistency')
     parser.add_argument('-o', '--outputdir', default='.', help='base output directory')
@@ -121,7 +138,7 @@ def main():
             sys.exit(1)
     if args.name is not None:
         logging.info('Reading from stdin')
-        shasplit(sys.stdin, args.name, args.outputdir, args.blocksize, args.algorithm)
+        backup(args.maxbackups, args.clean, sys.stdin, args.name, args.outputdir, args.blocksize, args.algorithm)
         sys.exit(0)
     if args.clean:
         clean(args.outputdir)
