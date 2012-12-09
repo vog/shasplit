@@ -127,7 +127,7 @@ def main():
         clean(args.outputdir)
         sys.exit(0)
     if args.check:
-        # Check already happened and was successful
+        # The check has already been executed successfully
         sys.exit(0)
     parser.print_help()
     sys.exit(1)
