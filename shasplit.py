@@ -117,6 +117,9 @@ def backup_lvm(volumegroup, maxbackups, do_clean, name, outputdir, blocksize, al
     check_volumegroup(volumegroup)
     raise NotImplementedError()
 
+def test():
+    raise NotImplementedError()
+
 def main():
     '''Run command line tool'''
     def name(s):
@@ -139,6 +142,7 @@ def main():
     parser.add_argument('-g', '--volumegroup', type=volumegroup, help='volume group for automatic LVM snapshot')
     parser.add_argument('-c', '--clean', action='store_true', help='remove orphaned data parts and old temporary files')
     parser.add_argument('-x', '--check', action='store_true', help='check output directory for consistency')
+    parser.add_argument('-t', '--test', action='store_true', help='run test suite')
     parser.add_argument('-o', '--outputdir', default='.', help='base output directory')
     parser.add_argument('-b', '--blocksize', default=64*1024, type=blocksize, help='set block size')
     parser.add_argument('-a', '--algorithm', default='sha1', choices=hashlib.algorithms, help='set hash algorithm')
@@ -149,6 +153,8 @@ def main():
     else:
         logging.basicConfig(level=logging.INFO, format='%(message)s')
     logging.debug('Received arguments %r', args)
+    if args.test:
+        test()
     if args.check:
         result = check(args.outputdir, args.algorithm)
         warning_msg = [msg for level, msg in result if level == 'WARNING']
@@ -169,8 +175,8 @@ def main():
     if args.clean:
         clean(args.outputdir)
         sys.exit(0)
-    if args.check:
-        # The check has already been executed successfully
+    if args.check or args.test:
+        # The checks or tests have already been executed successfully
         sys.exit(0)
     parser.print_help()
     sys.exit(1)
