@@ -43,6 +43,8 @@ def check_volumegroup(volumegroup):
         raise TypeError('Volume group must not be empty')
     if os.path.dirname(volumegroup) != '':
         raise TypeError(r'Volume group must not have a directory component')
+    if volumegroup[0] == '.':
+        raise TypeError('Volume group must not start with "."')
 
 def check_blocksize(blocksize):
     if not (blocksize > 0):
