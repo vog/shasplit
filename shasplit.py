@@ -150,7 +150,14 @@ def main():
         logging.basicConfig(level=logging.INFO, format='%(message)s')
     logging.debug('Received arguments %r', args)
     if args.check:
-        if not check(args.outputdir, args.algorithm):
+        result = check(args.outputdir, args.algorithm)
+        warning_msg = [msg for level, msg in result if level == 'WARNING']
+        critical_msg = [msg for level, msg in result if level != 'WARNING']
+        for msg in warning_msg:
+            logging.warn('%s', msg)
+        for msg in critical_msg:
+            logging.critical('%s', msg)
+        if len(critical_msg) != 0:
             sys.exit(1)
     if args.name is not None and args.volumegroup is not None:
         backup_lvm(args.volumegroup, args.maxbackups, args.clean, args.name, args.outputdir, args.blocksize, args.algorithm)
