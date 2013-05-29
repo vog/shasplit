@@ -30,7 +30,7 @@ def check_name(name):
     if len(name) < 1:
         raise TypeError('Name must not be empty')
     if os.path.dirname(name) != '':
-        raise TypeError(r'Name must not have a directory component')
+        raise TypeError('Name must not have a directory component')
     if name[0] in '._':
         raise TypeError('Name must not start with "." or "_"')
 
@@ -42,7 +42,7 @@ def check_volumegroup(volumegroup):
     if len(volumegroup) < 1:
         raise TypeError('Volume group must not be empty')
     if os.path.dirname(volumegroup) != '':
-        raise TypeError(r'Volume group must not have a directory component')
+        raise TypeError('Volume group must not have a directory component')
     if volumegroup[0] == '.':
         raise TypeError('Volume group must not start with "."')
 
