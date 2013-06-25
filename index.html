@@ -7,15 +7,15 @@
   <body>
     <h1>Shasplit – SHA-based data splitting for efficient backups</h1>
     <p>
-        Shasplit takes a large data block, splits it into smaller parts,
-        and puts those into an SHA-based content-addressed store.
-        Reassembling those parts is a trivial <tt>cat</tt> invocation.
-        Repeating parts (e.g. from previous split operations)
-        are stored only once,
-        which allows for efficient incremental backups
-        of whole LVM snapshots via Rsync.
-        Shasplit shows its strengths on encrypted block devices,
-        but might be useful for non-encrypted data, too.
+      Shasplit takes a large data block, splits it into smaller parts,
+      and puts those into an SHA-based content-addressed store.
+      Reassembling those parts is a trivial <tt>cat</tt> invocation.
+      Repeating parts (e.g. from previous split operations)
+      are stored only once,
+      which allows for efficient incremental backups
+      of whole LVM snapshots via Rsync.
+      Shasplit shows its strengths on encrypted block devices,
+      but might be useful for non-encrypted data, too.
     </p>
     <h2>Installation</h2>
     <pre>cd /opt
