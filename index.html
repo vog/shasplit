@@ -100,17 +100,42 @@ ln -s /opt/shasplit/shasplit.py /usr/bin/shasplit</pre>
     <pre>shasplit -n foobar &lt; /dev/vg0/foobar_snapshot
 rsync -aW --delete-after ~/.shasplit/ backupserver:/backup/</pre>
     <p>
-      Recovering the data is a trivial <q>cat</q> invocation:
+      Have fun!
     </p>
-    <pre>cd ~/.shasplit/foobar/2013-05-23_034242
-cat */* > /dev/vg0/foobar</pre>
+    <h2>Manual Recovery and Checking</h2>
     <p>
-      In case of <q>Argument list too long</q> errors,
-      do instead:
+      If Shasplit is not available on the target system,
+      it is very simple
+      to recover your data manually,
+      using standard Unix tools.
     </p>
-    <pre>cd ~/.shasplit/foobar/2013-05-23_034242
-find . -mindepth 2 | sort | xargs cat > /dev/vg0/foobar</pre>
-    <p>Have fun!</p>
+    <p>
+      First, you have to decide which instance you want to look at:
+    </p>
+    <pre>cd ~/.shasplit/foobar/2013-05-23_034242</pre>
+    <p>
+      Then, recovery is a trivial <q>cat</q> invocation:
+    </p>
+    <pre>cat */* > /dev/vg0/foobar</pre>
+    <ul>
+      <li>
+        <p>
+          In case of <q>Argument list too long</q> errors,
+          do instead:
+        </p>
+        <pre>find . -mindepth 2 | sort | xargs cat > /dev/vg0/foobar</pre>
+      </li>
+    </ul>
+    <p>
+      Before recovery,
+      you may want to run a
+      fast check for completeness by hand:
+    </p>
+    <pre>wc -c */*; cat size</pre>
+    <p>
+      To be safe, you can also run a thorough integrity check by hand:
+    </p>
+    <pre>cat */* | sha1sum; cat hash</pre>
     <h2>Details</h2>
     <p>
       Design goals:
@@ -196,16 +221,6 @@ find . -mindepth 2 | sort | xargs cat > /dev/vg0/foobar</pre>
         </ul>
       </li>
     </ul>
-    <p>
-      Fast check for completeness by hand:
-    </p>
-    <pre>cd ~/.shasplit/foobar/2013-05-23_034242
-wc -c */*; cat size</pre>
-    <p>
-      Check for integrity by hand:
-    </p>
-    <pre>cd ~/.shasplit/foobar/2013-05-23_034242
-cat */* | sha1sum; cat hash</pre>
     <h2>Related Projects</h2>
     <ul>
       <li><a href="https://github.com/vog/scs">Scs</a></li>
