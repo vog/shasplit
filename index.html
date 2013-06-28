@@ -84,7 +84,7 @@
     </ul>
     <h2>Installation</h2>
     <p>
-      Installation to the user's home directory:
+      Installation for a single user (assuming that <q>~/bin</q> is in PATH):
     </p>
     <pre>git clone https://github.com/vog/shasplit.git
 ln -s $(pwd)/shasplit/shasplit.py ~/bin/shasplit</pre>
@@ -95,7 +95,7 @@ ln -s $(pwd)/shasplit/shasplit.py ~/bin/shasplit</pre>
 ln -s /opt/shasplit/shasplit.py /usr/bin/shasplit</pre>
     <h2>Usage</h2>
     <p>
-      Configure the base directory where to store the data (e.g. <q>/backup</q>):
+      Configure the base directory where to store the data (here: <q>/backup</q>):
     </p>
     <pre>ln -sT /backup ~/.shasplit</pre>
     <p>
@@ -142,7 +142,7 @@ rsync -aW --delete-after ~/.shasplit/ backupserver:/backup/</pre>
       To be safe, you can also run a thorough integrity check by hand:
     </p>
     <pre>cat */* | sha1sum; cat hash</pre>
-    <h2>Details</h2>
+    <h2>Directory Layout</h2>
     <p>
       Design goals:
     </p>
@@ -150,7 +150,7 @@ rsync -aW --delete-after ~/.shasplit/ backupserver:/backup/</pre>
       <li>Trivial recovery by hand via <q>cat</q></li>
       <li>Integrity check possible by hand</li>
       <li>Human-readable directory layout</li>
-      <li>Support large encrypted block devices</li>
+      <li>Support for large encrypted block devices</li>
       <li>Efficient transfer by standard tools like Rsync and NFS (i.e. reuse repeating parts from previous splits)</li>
       <li>Fast check for completeness (i.e. robust against interrupted transfers)</li>
       <li>Avoid creating more than 4096 entries per directory</li>
