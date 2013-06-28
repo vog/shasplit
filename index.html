@@ -52,6 +52,10 @@
       a {
         text-decoration: none;
       }
+      ul.remark {
+        padding-left: 30pt;
+        list-style: none;
+      }
       .tree {
         font-family: monospace;
       }
@@ -99,7 +103,7 @@ ln -s /opt/shasplit/shasplit.py /usr/bin/shasplit</pre>
       Shasplit stores everything into
       <q>~/.shasplit</q>.
     </p>
-    <ul>
+    <ul class="remark">
       <li>
         <p>
           If you don't like that,
@@ -146,7 +150,7 @@ ln -s /opt/shasplit/shasplit.py /usr/bin/shasplit</pre>
       Then, recovery is a trivial <q>cat</q> invocation:
     </p>
     <pre>cat */* > /dev/vg0/foobar</pre>
-    <ul>
+    <ul class="remark">
       <li>
         <p>
           In case of <q>Argument list too long</q> errors,
