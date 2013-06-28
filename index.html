@@ -77,8 +77,15 @@
       but might be useful for non-encrypted data, too.
     </p>
     <h2>Installation</h2>
-    <pre>cd /opt
-git clone https://github.com/vog/shasplit.git
+    <p>
+      Installation to the user's home directory:
+    </p>
+    <pre>git clone https://github.com/vog/shasplit.git
+ln -s $(pwd)/shasplit/shasplit.py ~/bin/shasplit</pre>
+    <p>
+      System-wide installation:
+    </p>
+    <pre>git clone https://github.com/vog/shasplit.git /opt/shasplit
 ln -s /opt/shasplit/shasplit.py /usr/bin/shasplit</pre>
     <h2>Usage</h2>
     <p>
