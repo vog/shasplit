@@ -95,16 +95,39 @@ ln -s $(pwd)/shasplit/shasplit.py ~/bin/shasplit</pre>
 ln -s /opt/shasplit/shasplit.py /usr/bin/shasplit</pre>
     <h2>Usage</h2>
     <p>
-      Configure the base directory where to store the data (here: <q>/backup</q>):
+      Before you start, please be aware that
+      Shasplit stores everything into
+      <q>~/.shasplit</q>.
     </p>
-    <pre>ln -sT /backup ~/.shasplit</pre>
+    <ul>
+      <li>
+        <p>
+          If you don't like that,
+          place a symlink to the desired location
+          (here: <q>/backup</q>):
+        </p>
+        <pre>ln -sT /backup ~/.shasplit</pre>
+      </li>
+    </ul>
     <p>
       Preparing the snapshot
       of a whole LVM logical volume <q>foobar</q>
       for efficient backup via Rsync:
     </p>
-    <pre>shasplit -n foobar &lt; /dev/vg0/foobar_snapshot
-rsync -aW --delete-after ~/.shasplit/ backupserver:/backup/</pre>
+    <pre>shasplit -n foobar &lt; /dev/vg0/foobar_snapshot</pre>
+    <p>
+      If you transfer this data via Rsync,
+      you should use the options
+      <q>-W</q> for improved performance
+      and
+      <q>--delete-after</q> to keep the old backups
+      until the new backups are complete:
+    </p>
+    <pre>rsync -aW --delete-after ~/.shasplit/ backup@backupserver:.shasplit/</pre>
+    <p>
+      Later on, recover the latest complete backup of <q>foobar</q> with:
+    </p>
+    <pre>shasplit -r foobar > /dev/vg0/foobar</pre>
     <p>
       Have fun!
     </p>
