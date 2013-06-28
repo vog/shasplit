@@ -3,13 +3,66 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
     <title>Shasplit – SHA-based data splitting for efficient backups</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        font-size: 11pt;
+        margin-left: auto;
+        margin-right: auto;
+        width: 500pt;
+      }
+      h1 {
+        text-align: center;
+        font-size: 18pt;
+        background-color: #afa;
+        padding-top: 6pt;
+        padding-bottom: 6pt;
+        margin-top: 30pt;
+        margin-bottom: 15pt;
+        line-height: 1.5;
+      }
+      h2 {
+        padding-left: 10pt;
+        padding-top: 2pt;
+        padding-bottom: 2pt;
+        margin-top: 20pt;
+        margin-bottom: 15pt;
+        text-align: left;
+        font-size: 16pt;
+        background-color: #bdf;
+      }
+      p {
+        text-align: justify;
+      }
+      pre, code {
+        border: 1px dotted #44f;
+      }
+      pre {
+        padding-left: 4pt;
+        padding-right: 4pt;
+        padding-top: 2pt;
+        padding-bottom: 2pt;
+      }
+      code {
+        padding-left: 2pt;
+        padding-right: 2pt;
+        padding-top: 0pt;
+        padding-bottom: 0pt;
+      }
+      a {
+        text-decoration: none;
+      }
+      .tree {
+        font-family: monospace;
+      }
+    </style>
   </head>
   <body>
-    <h1>Shasplit – SHA-based data splitting for efficient backups</h1>
+    <h1>Shasplit<br>SHA-based data splitting for efficient backups</h1>
     <p>
       Shasplit takes a large data block, splits it into smaller parts,
       and puts those into an SHA-based content-addressed store.
-      Reassembling those parts is a trivial <tt>cat</tt> invocation.
+      Reassembling those parts is a trivial <q>cat</q> invocation.
       Repeating parts (e.g. from previous split operations)
       are stored only once,
       which allows for efficient incremental backups
@@ -22,12 +75,124 @@
 git clone <a href="https://github.com/vog/shasplit">https://github.com/vog/shasplit.git</a>
 ln -s /opt/shasplit/shasplit.py /usr/bin/shasplit</pre>
     <h2>Usage</h2>
-    <p>Preparing the snapshot of a whole LVM logical volume <em>foobar</em> for efficient backup via Rsync:</p>
-    <pre>shasplit -o /backup foobar &lt; /dev/vg0/foobar_snapshot
-rsync -aW --delete-after /backup/ backupserver:/backup/</pre>
-    <p>Restoring the data doesn't require any advanced tools:</p>
-    <pre>cat /backup/foobar/part_* &gt; /dev/vg0/foobar</pre>
+    <p>
+      Configure the base directory where to store the data (e.g. <q>/backup</q>):
+    </p>
+    <pre>ln -sT /backup ~/.shasplit</pre>
+    <p>
+      Preparing the snapshot
+      of a whole LVM logical volume <q>foobar</q>
+      for efficient backup via Rsync:
+    </p>
+    <pre>shasplit -n foobar &lt; /dev/vg0/foobar_snapshot
+rsync -aW --delete-after ~/.shasplit/ backupserver:/backup/</pre>
+    <p>
+      Recovering the data is a trivial <q>cat</q> invocation:
+    </p>
+    <pre>cd ~/.shasplit/foobar/2013-05-23_034242
+cat */* > /dev/vg0/foobar</pre>
+    <p>
+      In case of <q>Argument list too long</q> errors,
+      do instead:
+    </p>
+    <pre>cd ~/.shasplit/foobar/2013-05-23_034242
+find . -mindepth 2 | sort | xargs cat > /dev/vg0/foobar</pre>
     <p>Have fun!</p>
+    <h2>Details</h2>
+    <p>
+      Design goals:
+    </p>
+    <ol>
+      <li>Trivial recovery by hand via <q>cat</q></li>
+      <li>Integrity check possible by hand</li>
+      <li>Human-readable directory layout</li>
+      <li>Support large encrypted block devices</li>
+      <li>Efficient transfer by standard tools like Rsync and NFS (i.e. reuse repeating parts from previous splits)</li>
+      <li>Fast check for completeness (i.e. robust against interrupted transfers)</li>
+      <li>Avoid creating more than 4096 entries per directory</li>
+    </ol>
+    <p>
+      Base directory layout:
+    </p>
+    <ul class="tree">
+      <li>~/.shasplit/
+        <ul>
+          <li>.data/</li>
+          <li>foobar/
+            <ul>
+              <li>2013-05-21_034223/</li>
+              <li>2013-05-22_034247/</li>
+              <li>2013-05-23_034242/</li>
+            </ul>
+          </li>
+          <li>raboof/
+            <ul>
+              <li>2013-05-22_033827/</li>
+              <li>2013-05-23_033824/</li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+    </ul>
+    <p>
+      Directory layout of each instance:
+    </p>
+    <ul class="tree">
+      <li>~/.shasplit/foobar/2013-05-23_034242/
+        <ul>
+          <li>hash</li>
+          <li>size</li>
+          <li>000/
+            <ul>
+              <li>000 &rarr; ../../../.data/dea/6ef7bab6cb210</li>
+              <li>001 &rarr; ../../../.data/39e/fe6a053f13729</li>
+              <li>...</li>
+              <li>999 &rarr; ../../../.data/dea/fa22baa89298e</li>
+            </ul>
+          </li>
+          <li>001/
+            <ul>
+              <li>000 &rarr; ../../../.data/39e/c950863e06cbb</li>
+              <li>001 &rarr; ../../../.data/dea/dbeef00b68016</li>
+              <li>...</li>
+              <li>023 &rarr; ../../../.data/dea/dbeef00b68016</li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+    </ul>
+    <p>
+      Directory layout of <q>.data</q>:
+    </p>
+    <ul class="tree">
+      <li>~/.shasplit/.data/
+        <ul>
+          <li>39e/
+            <ul>
+              <li>c950863e06cbb</li>
+              <li>fe6a053f13729</li>
+            </ul>
+          </li>
+          <li>dea/
+            <ul>
+              <li>6ef7bab6cb210</li>
+              <li>dbeef00b68016</li>
+              <li>fa22baa89298e</li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+    </ul>
+    <p>
+      Fast check for completeness by hand:
+    </p>
+    <pre>cd ~/.shasplit/foobar/2013-05-23_034242
+wc -c */*; cat size</pre>
+    <p>
+      Check for integrity by hand:
+    </p>
+    <pre>cd ~/.shasplit/foobar/2013-05-23_034242
+cat */* | sha1sum; cat hash</pre>
     <h2>Related Projects</h2>
     <ul>
       <li><a href="https://github.com/vog/scs">Scs</a></li>
