@@ -100,8 +100,9 @@ ln -s /opt/shasplit/shasplit.py /usr/bin/shasplit</pre>
     <h2>Usage</h2>
     <p>
       Before you start, please be aware that
-      Shasplit stores everything into
-      <q>~/.shasplit</q>.
+      Shasplit stores everything in the
+      <q>~/.shasplit</q>
+      directory.
     </p>
     <ul class="remark">
       <li>
@@ -183,8 +184,8 @@ ln -s /opt/shasplit/shasplit.py /usr/bin/shasplit</pre>
       <li>Trivial recovery by hand via <q>cat</q></li>
       <li>Integrity check possible by hand</li>
       <li>Human-readable directory layout</li>
-      <li>Support for large encrypted block devices</li>
-      <li>Efficient transfer by standard tools like Rsync and NFS (i.e. reuse repeating parts from previous splits)</li>
+      <li>Support for large, possibly encrypted, block devices</li>
+      <li>Efficient transfer by standard tools like Rsync, NFS or SSHFS (i.e. reuse repeating parts from previous splits)</li>
       <li>Fast check for completeness (i.e. robust against interrupted transfers)</li>
       <li>Avoid creating more than 4096 entries per directory</li>
     </ol>
