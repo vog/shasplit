@@ -127,12 +127,12 @@ ln -s /opt/shasplit/shasplit.py /usr/bin/shasplit</pre>
     </p>
     <h2>Backup</h2>
     <p>
-      Create a new backup
+      Add a new backup
       from <q>/dev/vg0/foobar</q>
       with name <q>foobar</q>,
       keeping at most 7 completed backups:
     </p>
-    <pre>shasplit -c 7 foobar &lt; /dev/vg0/foobar</pre>
+    <pre>shasplit add foobar 7 &lt; /dev/vg0/foobar</pre>
     <ul class="remark">
       <li>
         <p>
@@ -141,9 +141,9 @@ ln -s /opt/shasplit/shasplit.py /usr/bin/shasplit</pre>
           and to release it afterwards.
           For LVM volumes,
           Shasplit takes care of snapshots automatically
-          if you specify the volume group as prefix:
+          if you specify the volume group:
         </p>
-        <pre>shasplit -c 7 vg0/foobar</pre>
+        <pre>shasplit add vg0 foobar 7</pre>
       </li>
     </ul>
     <p>
@@ -165,9 +165,9 @@ ln -s /opt/shasplit/shasplit.py /usr/bin/shasplit</pre>
     <pre>rsync -aW --delete-after ~/.shasplit/ backup@backupserver:.shasplit/</pre>
     <h2>Status and Checks</h2>
     <p>
-      List all instances and some status information about them:
+      Show status information for all instances:
     </p>
-    <pre>shasplit -l</pre>
+    <pre>shasplit status</pre>
     <ul class="remark">
       <li>
         <p>
@@ -187,12 +187,12 @@ raboof
       and report all parts and instances
       that are incomplete or inconsistent:
     </p>
-    <pre>shasplit -x</pre>
+    <pre>shasplit check</pre>
     <h2>Recovery</h2>
     <p>
       Recover the latest complete backup of <q>foobar</q> with:
     </p>
-    <pre>shasplit -r foobar > /dev/vg0/foobar</pre>
+    <pre>shasplit recover foobar > /dev/vg0/foobar</pre>
     <h2>Manual Recovery and Checking</h2>
     <p>
       If Shasplit is not available on the target system,
