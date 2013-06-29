@@ -127,10 +127,12 @@ ln -s /opt/shasplit/shasplit.py /usr/bin/shasplit</pre>
     </p>
     <h2>Backup</h2>
     <p>
-      Create a new backup instance of name <q>foobar</q>
-      from <q>/dev/vg0/foobar</q>:
+      Create a new backup
+      from <q>/dev/vg0/foobar</q>
+      with name <q>foobar</q>,
+      keeping at most 7 completed backups:
     </p>
-    <pre>shasplit -c foobar &lt; /dev/vg0/foobar</pre>
+    <pre>shasplit -c 7 foobar &lt; /dev/vg0/foobar</pre>
     <ul class="remark">
       <li>
         <p>
@@ -141,7 +143,7 @@ ln -s /opt/shasplit/shasplit.py /usr/bin/shasplit</pre>
           Shasplit takes care of snapshots automatically
           if you specify the volume group as prefix:
         </p>
-        <pre>shasplit -c vg0/foobar</pre>
+        <pre>shasplit -c 7 vg0/foobar</pre>
       </li>
     </ul>
     <p>
