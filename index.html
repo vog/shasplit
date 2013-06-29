@@ -121,11 +121,41 @@ ln -s /opt/shasplit/shasplit.py /usr/bin/shasplit</pre>
       <a href="https://en.wikipedia.org/wiki/Cryptographic_hash_function#Cryptographic_hash_algorithms">secure hash algorithm</a>.
     </p>
     <p>
-      Preparing the snapshot
-      of a whole LVM logical volume <q>foobar</q>
-      for efficient backup via Rsync:
+      Create a new backup instance of name <q>foobar</q>
+      from <q>/dev/vg0/foobar</q>:
     </p>
-    <pre>shasplit -n foobar &lt; /dev/vg0/foobar_snapshot</pre>
+    <pre>shasplit -c foobar &lt; /dev/vg0/foobar</pre>
+    <ul class="remark">
+      <li>
+        <p>
+          If you backup a running system,
+          don't forget to create a snapshot before backup
+          and to release it afterwards.
+          For LVM volumes,
+          Shasplit takes care of snapshots automatically
+          if you specify the volume group as prefix:
+        </p>
+        <pre>shasplit -c vg0/foobar</pre>
+      </li>
+    </ul>
+    <p>
+      List all instances:
+    </p>
+    <pre>shasplit -l</pre>
+    <ul class="remark">
+      <li>
+        <p>
+          Example output:
+        </p>
+        <pre>foobar
+  2013-05-21 03:42:23  1073741824  100%
+  2013-05-22 03:42:47  1073741824   75%  incomplete
+  2013-05-23 03:42:42  1073741824  100%
+raboof
+  2013-05-22 03:38:27  67108864  100%
+  2013-05-23 03:38:24  67108864  100%</pre>
+      </li>
+    </ul>
     <p>
       If you transfer this data via Rsync,
       you should use the options
@@ -139,6 +169,12 @@ ln -s /opt/shasplit/shasplit.py /usr/bin/shasplit</pre>
       Later on, recover the latest complete backup of <q>foobar</q> with:
     </p>
     <pre>shasplit -r foobar > /dev/vg0/foobar</pre>
+    <p>
+      Perform a thorough integrity check
+      and report all parts and instances
+      that are incomplete or inconsistent:
+    </p>
+    <pre>shasplit -x</pre>
     <p>
       Have fun!
     </p>
