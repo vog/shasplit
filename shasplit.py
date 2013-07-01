@@ -44,6 +44,9 @@ class Shasplit:
     def instancedir(self, name, timestamp):
         return os.path.join(self.namedir(name), timestamp.replace(':', ''))
 
+    def names(self):
+        return sorted(name for name in os.listdir(self.directory) if name != '.data')
+
     def timestamps(self, name):
         return sorted(
             timestampdir[:13] + ':' + timestampdir[13:15] + ':' + timestampdir[15:]
@@ -133,7 +136,19 @@ class Shasplit:
         raise NotImplementedError()
 
     def status(self):
-        raise NotImplementedError()
+        for name in self.names():
+            logging.info('%s', name)
+            for timestamp in self.timestamps(name):
+                size, expected_size = self.sizes(name, timestamp)
+                if size == expected_size:
+                    completeness = ''
+                else:
+                    completeness = '  incomplete'
+                if expected_size == 0:
+                    percentage = 100
+                else:
+                    percentage = int(100 * size / expected_size)
+                logging.info('  %s  %d  %3d%%%s', timestamp, expected_size, percentage, completeness)
 
     def check(self):
         raise NotImplementedError()
