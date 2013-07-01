@@ -44,6 +44,14 @@ class Shasplit:
     def instancedir(self, name, timestamp):
         return os.path.join(self.namedir(name), timestamp.replace(':', ''))
 
+    def partfiles(self, name, timestamp):
+        instancedir = self.instancedir(name, timestamp)
+        for partdir_name in sorted(os.listdir(instancedir)):
+            partdir = os.path.join(instancedir, partdir_name)
+            if os.path.isdir(partdir):
+                for partfile in sorted(os.listdir(partdir)):
+                    yield os.path.join(partdir, partfile)
+
     def write_file(self, filename, data):
         filedir = os.path.dirname(filename)
         if not os.path.exists(filedir):
@@ -113,11 +121,25 @@ class Shasplit:
     def recover(self, name, timestamp, output_io):
         name = self.validate_name(name)
         timestamp = self.validate_timestamp(timestamp)
-        raise NotImplementedError()
+        logging.debug('Recovering %r at %r', name, timestamp)
+        # TODO: Check for completenes (size)
+        hash_total = hashlib.new(self.algorithm)
+        for partfile in self.partfiles(name, timestamp):
+            logging.debug('Reading from %r', partfile)
+            with open(partfile, 'rb') as f:
+                data = f.read()
+            output_io.write(data)
+            hash_total.update(data)
+        with open(os.path.join(self.instancedir(name, timestamp), 'hash'), 'rb') as f:
+            expected_hash = f.read().rstrip('\n')
+        if hash_total.hexdigest() != expected_hash:
+            raise RuntimeError('Integrity error: expected hash %r, actual hash %r' % (expected_hash, hash_total.hexdigest()))
 
     def recover_latest(self, name, output_io):
         name = self.validate_name(name)
-        raise NotImplementedError()
+        timestampdir = max(os.listdir(self.namedir(name)))
+        timestamp = timestampdir[:13] + ':' + timestampdir[13:15] + ':' + timestampdir[15:]
+        self.recover(name, timestamp, output_io)
 
     def validate_algorithm(self, algorithm):
         algorithm = str(algorithm)
