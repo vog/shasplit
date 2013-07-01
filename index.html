@@ -174,12 +174,12 @@ ln -s /opt/shasplit/shasplit.py /usr/bin/shasplit</pre>
           Example output:
         </p>
         <pre>foobar
-  2013-05-21 03:42:23  1073741824  100%
-  2013-05-22 03:42:47  1073741824   75%  incomplete
-  2013-05-23 03:42:42  1073741824  100%
+  2013-05-21T03:42:23  1073741824  100%
+  2013-05-22T03:42:47  1073741824   75%  incomplete
+  2013-05-23T03:42:42  1073741824  100%
 raboof
-  2013-05-22 03:38:27  67108864  100%
-  2013-05-23 03:38:24  67108864  100%</pre>
+  2013-05-22T03:38:27  67108864  100%
+  2013-05-23T03:38:24  67108864  100%</pre>
       </li>
     </ul>
     <p>
@@ -203,7 +203,7 @@ raboof
     <p>
       First, you have to decide which instance you want to look at:
     </p>
-    <pre>cd ~/.shasplit/foobar/2013-05-23_034242</pre>
+    <pre>cd ~/.shasplit/foobar/2013-05-23T034242</pre>
     <p>
       Then, recovery is a trivial <q>cat</q> invocation:
     </p>
@@ -255,15 +255,15 @@ raboof
           <li>.data/</li>
           <li>foobar/
             <ul>
-              <li>2013-05-21_034223/</li>
-              <li>2013-05-22_034247/</li>
-              <li>2013-05-23_034242/</li>
+              <li>2013-05-21T034223/</li>
+              <li>2013-05-22T034247/</li>
+              <li>2013-05-23T034242/</li>
             </ul>
           </li>
           <li>raboof/
             <ul>
-              <li>2013-05-22_033827/</li>
-              <li>2013-05-23_033824/</li>
+              <li>2013-05-22T033827/</li>
+              <li>2013-05-23T033824/</li>
             </ul>
           </li>
         </ul>
@@ -273,7 +273,7 @@ raboof
       Directory layout of each instance:
     </p>
     <ul class="tree">
-      <li>~/.shasplit/foobar/2013-05-23_034242/
+      <li>~/.shasplit/foobar/2013-05-23T034242/
         <ul>
           <li>hash</li>
           <li>size</li>
