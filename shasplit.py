@@ -226,7 +226,7 @@ def main():
         logging.basicConfig(level=logging.DEBUG, format='%(levelname)s:%(message)s')
     logging.debug('Received arguments %r', sys.argv)
     if len(sys.argv) <= 1:
-        logging.info('Usage: shasplit ' + '|'.join(sorted(set(cmd for (cmd, _) in commands))) + ' [...]')
+        logging.info('Usage: shasplit %s [...]', '|'.join(sorted(set(cmd for (cmd, _) in commands))))
         sys.exit(1)
     cmd = sys.argv[1]
     args = sys.argv[2:]
