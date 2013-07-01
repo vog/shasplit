@@ -227,6 +227,12 @@ raboof
       To be safe, you can also run an integrity check for that instance by hand:
     </p>
     <pre>cat */* | sha1sum; cat hash</pre>
+    <h2>Debug</h2>
+    <p>
+      You can always enable debuging output
+      via the <q>SHASPLIT_DEBUG</q> environment variable:
+    </p>
+    <pre>SHASPLIT_DEBUG=1 shasplit add vg0 foobar 7</pre>
     <h2>Directory Layout</h2>
     <p>
       Design goals:
