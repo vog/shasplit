@@ -64,6 +64,7 @@ class Shasplit:
     def add(self, name, maxbackups, input_io):
         name = self.validate_name(name)
         maxbackups = self.validate_maxbackups(maxbackups)
+        logging.debug('Adding to %r while keeping at most %r backups', name, maxbackups)
         # TODO: Status
         # TODO: Max Backups + Clean
         timestamp = self.validate_timestamp(datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'))
