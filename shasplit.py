@@ -38,6 +38,12 @@ class Shasplit:
     def hash_filename(self, hexdigest):
         return os.path.join('.data', hexdigest[:3], hexdigest[3:])
 
+    def namedir(self, name):
+        return os.path.join(self.directory, name)
+
+    def instancedir(self, name, timestamp):
+        return os.path.join(self.namedir(name), timestamp.replace(':', ''))
+
     def write_file(self, filename, data):
         filedir = os.path.dirname(filename)
         if not os.path.exists(filedir):
@@ -61,8 +67,7 @@ class Shasplit:
         # TODO: Status
         # TODO: Max Backups + Clean
         timestamp = self.validate_timestamp(datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'))
-        timestamp_dir = timestamp.replace(':', '')
-        instancedir = os.path.join(self.directory, name, timestamp_dir)
+        instancedir = self.instancedir(name, timestamp)
         if os.path.exists(instancedir):
             raise RuntimeError('Directory already exists: %r' % (instancedir,))
         hash_total = hashlib.new(self.algorithm)
