@@ -193,6 +193,10 @@ raboof
       Recover the latest complete backup of <q>foobar</q> with:
     </p>
     <pre>shasplit recover foobar > /dev/vg0/foobar</pre>
+    <p>
+      Recover the backup of <q>foobar</q> at <q>2013-05-23T03:42:42</q>:
+    </p>
+    <pre>shasplit recover foobar 2013-05-23T03:42:42 > /dev/vg0/foobar</pre>
     <h2>Manual Recovery and Checking</h2>
     <p>
       If Shasplit is not available on the target system,
