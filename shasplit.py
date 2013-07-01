@@ -52,6 +52,18 @@ class Shasplit:
                 for partfile in sorted(os.listdir(partdir)):
                     yield os.path.join(partdir, partfile)
 
+    def sizes(self, name, timestamp):
+        size = 0
+        for partfile in self.partfiles(name, timestamp):
+            partsize = os.stat(partfile).st_size
+            logging.debug('Size of %r is %r', partfile, partsize)
+            size += partsize
+        with open(os.path.join(self.instancedir(name, timestamp), 'size'), 'rb') as f:
+            expected_size = int(f.read())
+        if size > expected_size:
+            raise RuntimeError('Integrity error: expected size %r, actual size %r' % (expected_size, size))
+        return size, expected_size
+
     def write_file(self, filename, data):
         filedir = os.path.dirname(filename)
         if not os.path.exists(filedir):
@@ -122,7 +134,9 @@ class Shasplit:
         name = self.validate_name(name)
         timestamp = self.validate_timestamp(timestamp)
         logging.debug('Recovering %r at %r', name, timestamp)
-        # TODO: Check for completenes (size)
+        size, expected_size = self.sizes(name, timestamp)
+        if size != expected_size:
+            raise RuntimeError('Incomplete backup: expected size %r, actual size %r' % (expected_size, size))
         hash_total = hashlib.new(self.algorithm)
         for partfile in self.partfiles(name, timestamp):
             logging.debug('Reading from %r', partfile)
