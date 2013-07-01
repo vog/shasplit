@@ -18,168 +18,179 @@ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 '''
 
-import argparse
+import datetime
 import hashlib
+import itertools
 import logging
 import os
 import os.path
+import re
 import sys
-import uuid
 
-def check_name(name):
-    if len(name) < 1:
-        raise TypeError('Name must not be empty')
-    if os.path.dirname(name) != '':
-        raise TypeError('Name must not have a directory component')
-    if name[0] in '._':
-        raise TypeError('Name must not start with "." or "_"')
+class Shasplit:
 
-def check_maxbackups(maxbackups):
-    if not (maxbackups > 0):
-        raise TypeError('Maximum number of backups must be positive')
+    def __init__(self, algorithm='sha1', partsize=1024*1024, maxparts=1000000, directory='~/.shasplit'):
+        self.algorithm = self.validate_algorithm(algorithm)
+        self.partsize = self.validate_partsize(partsize)
+        self.maxparts = self.validate_maxparts(maxparts)
+        self.directory = os.path.expanduser(directory)
 
-def check_volumegroup(volumegroup):
-    if len(volumegroup) < 1:
-        raise TypeError('Volume group must not be empty')
-    if os.path.dirname(volumegroup) != '':
-        raise TypeError('Volume group must not have a directory component')
-    if volumegroup[0] == '.':
-        raise TypeError('Volume group must not start with "."')
+    def hash_filename(self, hexdigest):
+        return os.path.join('.data', hexdigest[:3], hexdigest[3:])
 
-def check_blocksize(blocksize):
-    if not (blocksize > 0):
-        raise TypeError('Block size must be positive')
+    def write_file(self, filename, data):
+        filedir = os.path.dirname(filename)
+        if not os.path.exists(filedir):
+            logging.debug('Creating directory %r', filedir)
+            os.makedirs(filedir)
+        logging.debug('Creating file %r of size %r', filename, len(data))
+        with open(filename, 'wb') as f:
+            f.write(data)
 
-def shasplit(input_io, name, outputdir, blocksize, algorithm):
-    '''Split data from input_io into hashed parts'''
-    check_name(name)
-    check_blocksize(name)
-    hash_total = hashlib.new(algorithm)
-    if not os.path.exists(outputdir):
-        raise RuntimeError('Directory %r does not exist' % (outputdir,))
-    datadir = os.path.join(outputdir, '_data')
-    namedir = os.path.join(outputdir, name)
-    if os.path.exists(namedir):
-        raise RuntimeError('Directory %r already exists' % (namedir,))
-    namedir_tmp = os.path.join(outputdir, '_tmp_' + str(uuid.uuid4()))
-    os.mkdir(namedir_tmp)
-    if not os.path.exists(datadir):
-        os.mkdir(datadir)
-    part_start = 1
-    part_len = 5
-    for partnr in xrange(part_start, 10**part_len + 1):
-        part = str(partnr).rjust(part_len, '0')
-        if len(part) != part_len:
-            raise RuntimeError('Too many parts')
-        block = input_io.read(blocksize)
-        if len(block) == 0:
-            break
-        hexdigest = hashlib.new(algorithm, block).hexdigest()
-        hash_total.update(block)
-        logging.debug('Part %s: Creating symlink', part)
-        part_filename = os.path.join(namedir_tmp, 'part_' + part)
-        part_filename_tmp = os.path.join(outputdir, '_tmp_' + str(uuid.uuid4()))
-        os.symlink(os.path.join('..', os.path.basename(datadir), hexdigest), part_filename_tmp)
-        os.rename(part_filename_tmp, part_filename)
-        data_filename = os.path.join(datadir, hexdigest)
-        if os.path.exists(data_filename):
-            logging.debug('Part %s: Skipping existing data file %r', part, data_filename)
-        else:
-            logging.debug('Part %s: Creating data file %r', part, data_filename)
-            data_filename_tmp = os.path.join(outputdir, '_tmp_' + str(uuid.uuid4()))
-            with open(data_filename_tmp, 'wb') as f:
-                f.write(block)
-            os.rename(data_filename_tmp, data_filename)
-    hexdigest_total = hash_total.hexdigest()
-    logging.debug('Creating hash file containing %s', hexdigest_total)
-    hash_filename = os.path.join(namedir_tmp, 'hash')
-    hash_filename_tmp = os.path.join(outputdir, '_tmp_' + str(uuid.uuid4()))
-    with open(hash_filename_tmp, 'wb') as f:
-        f.write(hexdigest_total + '\n')
-    os.rename(hash_filename_tmp, hash_filename)
-    os.rename(namedir_tmp, namedir)
+    def symlink(self, target, filename):
+        filedir = os.path.dirname(filename)
+        if not os.path.exists(filedir):
+            logging.debug('Creating directory %r', filedir)
+            os.makedirs(filedir)
+        logging.debug('Creating symlink %r -> %r', filename, target)
+        os.symlink(target, filename)
 
-def clean(outputdir):
-    raise NotImplementedError()
+    def add(self, name, maxbackups, input_io):
+        name = self.validate_name(name)
+        maxbackups = self.validate_maxbackups(maxbackups)
+        # TODO: Status
+        # TODO: Max Backups + Clean
+        timestamp = self.validate_timestamp(datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'))
+        timestamp_dir = timestamp.replace(':', '')
+        instancedir = os.path.join(self.directory, name, timestamp_dir)
+        if os.path.exists(instancedir):
+            raise RuntimeError('Directory already exists: %r' % (instancedir,))
+        hash_total = hashlib.new(self.algorithm)
+        size_total = 0
+        for partnr in itertools.count(0):
+            data = input_io.read(self.partsize)
+            if len(data) == 0:
+                break
+            hash_total.update(data)
+            size_total += len(data)
+            if partnr >= self.maxparts:
+                raise RuntimeError('Too many parts')
+            dirlen = 3
+            partlen = max(dirlen + 1, len(str(self.maxparts - 1)))
+            part = str(partnr).rjust(partlen, '0')
+            hexdigest = hashlib.new(self.algorithm, data).hexdigest()
+            target = os.path.join('..', '..', '..', self.hash_filename(hexdigest))
+            symlink_filename = os.path.join(instancedir, part[:dirlen], part[dirlen:])
+            self.symlink(target, symlink_filename)
+            data_filename = os.path.join(self.directory, self.hash_filename(hexdigest))
+            if os.path.exists(data_filename) and os.stat(data_filename).st_size == len(data):
+                logging.debug('Skipping existing complete data file %r', data_filename)
+            else:
+                self.write_file(data_filename, data)
+        self.write_file(os.path.join(instancedir, 'hash'), '%s\n' % (hash_total.hexdigest(),))
+        self.write_file(os.path.join(instancedir, 'size'), '%d\n' % (size_total,))
+        # TODO: Max Backups + Clean
+        # TODO: Status
 
-def check(outputdir, algorithm):
-    raise NotImplementedError()
-
-def backup(maxbackups, do_clean, input_io, name, outputdir, blocksize, algorithm):
-    if maxbackups is not None:
-        check_maxbackups(maxbackups)
+    def add_lvm(self, volumegroup, name, maxbackups, input_io):
+        volumegroup = self.validate_volumegroup(volumegroup)
+        name = self.validate_name(name)
+        maxbackups = self.validate_maxbackups(maxbackups)
         raise NotImplementedError()
-    shasplit(input_io, name, outputdir, blocksize, algorithm)
-    if do_clean:
-        clean(outputdir)
 
-def backup_lvm(volumegroup, maxbackups, do_clean, name, outputdir, blocksize, algorithm):
-    check_volumegroup(volumegroup)
-    raise NotImplementedError()
+    def status(self):
+        raise NotImplementedError()
 
-def test():
-    raise NotImplementedError()
+    def check(self):
+        raise NotImplementedError()
+
+    def recover(self, name, timestamp, output_io):
+        name = self.validate_name(name)
+        timestamp = self.validate_timestamp(timestamp)
+        raise NotImplementedError()
+
+    def recover_latest(self, name, output_io):
+        name = self.validate_name(name)
+        raise NotImplementedError()
+
+    def validate_algorithm(self, algorithm):
+        algorithm = str(algorithm)
+        if algorithm not in hashlib.algorithms:
+            raise TypeError('Unknown secure hash algorithm')
+        return algorithm
+
+    def validate_maxbackups(self, maxbackups):
+        maxbackups = int(maxbackups)
+        if not (maxbackups > 0):
+            raise TypeError('Maximum number of backups must be positive')
+        return maxbackups
+
+    def validate_maxparts(self, maxparts):
+        maxparts = int(maxparts)
+        if not (maxparts > 0):
+            raise TypeError('Maximum number of parts must be positive')
+        return maxparts
+
+    def validate_name(self, name):
+        name = str(name)
+        if len(name) < 1:
+            raise TypeError('Name must not be empty')
+        if os.path.dirname(name) != '':
+            raise TypeError('Name must not have a directory component')
+        if name[0] in '._':
+            raise TypeError('Name must not start with "." or "_"')
+        return name
+
+    def validate_partsize(self, partsize):
+        partsize = int(partsize)
+        if not (partsize > 0):
+            raise TypeError('Part size must be positive')
+        return partsize
+
+    def validate_timestamp(self, timestamp):
+        timestamp = str(timestamp)
+        if not re.match('^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$', timestamp):
+            raise TypeError('Timestamp must have format YYYY-MM-DDThh:mm:ss')
+        return timestamp
+
+    def validate_volumegroup(self, volumegroup):
+        volumegroup = str(volumegroup)
+        if len(volumegroup) < 1:
+            raise TypeError('Volume group must not be empty')
+        if os.path.dirname(volumegroup) != '':
+            raise TypeError('Volume group must not have a directory component')
+        if volumegroup[0] == '.':
+            raise TypeError('Volume group must not start with "."')
+        return volumegroup
 
 def main():
     '''Run command line tool'''
-    def name(s):
-        check_name(s)
-        return s
-    def maxbackups(s):
-        i = int(s)
-        check_maxbackups(i)
-        return i
-    def volumegroup(s):
-        check_volumegroup(s)
-        return s
-    def blocksize(s):
-        i = int(s)
-        check_blocksize(i)
-        return i
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-n', '--name', type=name, help='split data into the named directory')
-    parser.add_argument('-m', '--maxbackups', type=maxbackups, help='maximum number of backups to keep')
-    parser.add_argument('-g', '--volumegroup', type=volumegroup, help='volume group for automatic LVM snapshot')
-    parser.add_argument('-c', '--clean', action='store_true', help='remove orphaned data parts and old temporary files')
-    parser.add_argument('-x', '--check', action='store_true', help='check output directory for consistency')
-    parser.add_argument('-t', '--test', action='store_true', help='run test suite')
-    parser.add_argument('-o', '--outputdir', default='.', help='base output directory')
-    parser.add_argument('-b', '--blocksize', default=64*1024, type=blocksize, help='set block size')
-    parser.add_argument('-a', '--algorithm', default='sha1', choices=hashlib.algorithms, help='set hash algorithm')
-    parser.add_argument('-v', '--verbose', action='store_true', help='enable verbose output')
-    args = parser.parse_args()
-    if args.verbose:
-        logging.basicConfig(level=logging.DEBUG, format='%(levelname)s:%(message)s')
-    else:
+    shasplit = Shasplit()
+    commands = {
+        ('add', 2): (shasplit.add, [sys.stdin]),
+        ('add', 3): (shasplit.add_lvm, [sys.stdin]),
+        ('check', 0): (shasplit.check, []),
+        ('status', 0): (shasplit.status, []),
+        ('recover', 1): (shasplit.recover_latest, [sys.stdout]),
+        ('recover', 2): (shasplit.recover, [sys.stdout]),
+    }
+    if os.getenv('SHASPLIT_DEBUG') in (None, '', '0'):
         logging.basicConfig(level=logging.INFO, format='%(message)s')
-    logging.debug('Received arguments %r', args)
-    if args.test:
-        test()
-    if args.check:
-        result = check(args.outputdir, args.algorithm)
-        warning_msg = [msg for level, msg in result if level == 'WARNING']
-        critical_msg = [msg for level, msg in result if level != 'WARNING']
-        for msg in warning_msg:
-            logging.warn('%s', msg)
-        for msg in critical_msg:
-            logging.critical('%s', msg)
-        if len(critical_msg) != 0:
-            sys.exit(1)
-    if args.name is not None and args.volumegroup is not None:
-        backup_lvm(args.volumegroup, args.maxbackups, args.clean, args.name, args.outputdir, args.blocksize, args.algorithm)
-        sys.exit(0)
-    if args.name is not None and args.volumegroup is None:
+    else:
+        logging.basicConfig(level=logging.DEBUG, format='%(levelname)s:%(message)s')
+    logging.debug('Received arguments %r', sys.argv)
+    if len(sys.argv) <= 1:
+        logging.info('Usage: shasplit ' + '|'.join(sorted(set(cmd for (cmd, _) in commands))) + ' [...]')
+        sys.exit(1)
+    cmd = sys.argv[1]
+    args = sys.argv[2:]
+    try:
+        func, extra_args = commands[cmd, len(args)]
+    except KeyError, e:
+        raise ValueError('Invalid arguments')
+    if sys.stdin in extra_args:
         logging.info('Reading from stdin')
-        backup(args.maxbackups, args.clean, sys.stdin, args.name, args.outputdir, args.blocksize, args.algorithm)
-        sys.exit(0)
-    if args.clean:
-        clean(args.outputdir)
-        sys.exit(0)
-    if args.check or args.test:
-        # The checks or tests have already been executed successfully
-        sys.exit(0)
-    parser.print_help()
-    sys.exit(1)
+    func(*(args + extra_args))
 
 if __name__ == '__main__':
     main()
