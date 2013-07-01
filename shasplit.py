@@ -66,6 +66,8 @@ class Shasplit:
             size += partsize
         with open(os.path.join(self.instancedir(name, timestamp), 'size'), 'rb') as f:
             expected_size = int(f.read())
+        if expected_size < 0:
+            raise ValueError('Negative expected size: %r' % (expected_size,))
         if size > expected_size:
             raise RuntimeError('Integrity error: expected size %r, actual size %r' % (expected_size, size))
         return size, expected_size
