@@ -28,10 +28,51 @@ import re
 import subprocess
 import sys
 
+class Util:
+
+    def write_file(self, filename, data):
+        filedir = os.path.dirname(filename)
+        if not os.path.exists(filedir):
+            logging.debug('Creating directory %r', filedir)
+            os.makedirs(filedir)
+        logging.debug('Creating file %r of size %r', filename, len(data))
+        with open(filename, 'wb') as f:
+            f.write(data)
+
+    def symlink(self, target, filename):
+        filedir = os.path.dirname(filename)
+        if not os.path.exists(filedir):
+            logging.debug('Creating directory %r', filedir)
+            os.makedirs(filedir)
+        logging.debug('Creating symlink %r -> %r', filename, target)
+        os.symlink(target, filename)
+
+    def run_command(self, args):
+        logging.debug('Running command %r', args)
+        try:
+            proc = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            out, _ = proc.communicate()
+            if proc.returncode != 0:
+                raise RuntimeError('Command %r failed: %r' % (' '.join(args), out.strip()))
+        except OSError, e:
+            raise RuntimeError('Command %r failed: %r' % (' '.join(args), e))
+
+    def sync(self):
+        self.run_command(['sync'])
+
+    def lvcreate(self, volumegroup, name, snapshot, snapshotsize):
+        logging.debug('Creating snapshot %r/%r', volumegroup, snapshot)
+        self.run_command(['lvcreate', '-s', volumegroup + '/' + name, '-n', snapshot, '-L', str(snapshotsize) + 'B'])
+
+    def lvremove(self, volumegroup, name):
+        logging.debug('Removing logical volume %r/%r', volumegroup, name)
+        self.run_command(['lvremove', '-f', volumegroup + '/' + name])
+
 class Shasplit:
 
     def __init__(self, algorithm='sha1', partsize=1*1024*1024, maxparts=1000000, directory='~/.shasplit',
                  snapshotsuffix='_shasplit', snapshotsize=128*1024*1024):
+        self.util = Util()
         self.algorithm = self.validate_algorithm(algorithm)
         self.partsize = self.validate_partsize(partsize)
         self.maxparts = self.validate_maxparts(maxparts)
@@ -101,23 +142,6 @@ class Shasplit:
         if size > expected_size:
             raise RuntimeError('Integrity error: expected size %r, actual size %r' % (expected_size, size))
         return size, expected_size
-
-    def write_file(self, filename, data):
-        filedir = os.path.dirname(filename)
-        if not os.path.exists(filedir):
-            logging.debug('Creating directory %r', filedir)
-            os.makedirs(filedir)
-        logging.debug('Creating file %r of size %r', filename, len(data))
-        with open(filename, 'wb') as f:
-            f.write(data)
-
-    def symlink(self, target, filename):
-        filedir = os.path.dirname(filename)
-        if not os.path.exists(filedir):
-            logging.debug('Creating directory %r', filedir)
-            os.makedirs(filedir)
-        logging.debug('Creating symlink %r -> %r', filename, target)
-        os.symlink(target, filename)
 
     def remove_obsolete(self, name, maxbackups):
         name = self.validate_name(name)
@@ -200,14 +224,14 @@ class Shasplit:
             hexdigest = hashlib.new(self.algorithm, data).hexdigest()
             target = os.path.join('..', '..', '..', self.hash_filename(hexdigest))
             symlink_filename = os.path.join(instancedir, part[:dirlen], part[dirlen:])
-            self.symlink(target, symlink_filename)
+            self.util.symlink(target, symlink_filename)
             data_filename = os.path.join(self.directory, self.hash_filename(hexdigest))
             if os.path.exists(data_filename) and os.path.getsize(data_filename) == len(data):
                 logging.debug('Skipping existing complete data file %r', data_filename)
             else:
-                self.write_file(data_filename, data)
-        self.write_file(os.path.join(instancedir, 'hash'), '%s\n' % (hash_total.hexdigest(),))
-        self.write_file(os.path.join(instancedir, 'size'), '%d\n' % (size_total,))
+                self.util.write_file(data_filename, data)
+        self.util.write_file(os.path.join(instancedir, 'hash'), '%s\n' % (hash_total.hexdigest(),))
+        self.util.write_file(os.path.join(instancedir, 'size'), '%d\n' % (size_total,))
 
     def add(self, name, maxbackups, input_io):
         name = self.validate_name(name)
@@ -216,40 +240,19 @@ class Shasplit:
         self.add_nomaxbackups(name)
         self.remove_obsolete(name, maxbackups)
 
-    def run_command(self, args):
-        logging.debug('Running command %r', args)
-        try:
-            proc = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-            out, _ = proc.communicate()
-            if proc.returncode != 0:
-                raise RuntimeError('Command %r failed: %r' % (' '.join(args), out.strip()))
-        except OSError, e:
-            raise RuntimeError('Command %r failed: %r' % (' '.join(args), e))
-
-    def sync(self):
-        self.run_command(['sync'])
-
-    def lvcreate(self, volumegroup, name, snapshot, snapshotsize):
-        logging.debug('Creating snapshot %r/%r', volumegroup, snapshot)
-        self.run_command(['lvcreate', '-s', volumegroup + '/' + name, '-n', snapshot, '-L', str(snapshotsize) + 'B'])
-
-    def lvremove(self, volumegroup, name):
-        logging.debug('Removing logical volume %r/%r', volumegroup, name)
-        self.run_command(['lvremove', '-f', volumegroup + '/' + name])
-
     def add_lvm(self, volumegroup, name, maxbackups):
         volumegroup = self.validate_volumegroup(volumegroup)
         name = self.validate_name(name)
         maxbackups = self.validate_maxbackups(maxbackups)
         self.remove_obsolete(name, maxbackups)
-        self.sync()
+        self.util.sync()
         snapshot = name + self.snapshotsuffix
-        self.lvcreate(volumegroup, name, snapshot, self.snapshotsize)
+        self.util.lvcreate(volumegroup, name, snapshot, self.snapshotsize)
         try:
             with open(os.path.join('/dev', volumegroup, snapshot), 'rb') as input_io:
                 self.add_nomaxbackups(name, input_io)
         finally:
-            self.lvremove(volumegroup, snapshot)
+            self.util.lvremove(volumegroup, snapshot)
         self.remove_obsolete(name, maxbackups)
 
     def status(self):
