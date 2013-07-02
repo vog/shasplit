@@ -48,7 +48,7 @@ class Shasplit:
     def names(self):
         for name in os.listdir(self.directory):
             if name != '.data':
-                yield name
+                yield self.validate_name(name)
 
     def instancedir(self, name, timestamp):
         return os.path.join(self.namedir(name), timestamp.replace(':', ''))
