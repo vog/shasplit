@@ -58,15 +58,15 @@ class Util:
             raise RuntimeError('Command %r failed: %s' % (' '.join(args), e))
 
     def sync(self):
-        self.run_command(['sync'])
+        self.run_command(['/bin/sync'])
 
     def lvcreate(self, volumegroup, name, snapshot, snapshotsize):
         logging.debug('Creating snapshot %r/%r', volumegroup, snapshot)
-        self.run_command(['lvcreate', '-s', volumegroup + '/' + name, '-n', snapshot, '-L', str(snapshotsize) + 'B'])
+        self.run_command(['/sbin/lvcreate', '-s', volumegroup + '/' + name, '-n', snapshot, '-L', str(snapshotsize) + 'B'])
 
     def lvremove(self, volumegroup, name):
         logging.debug('Removing logical volume %r/%r', volumegroup, name)
-        self.run_command(['lvremove', '-f', volumegroup + '/' + name])
+        self.run_command(['/sbin/lvremove', '-f', volumegroup + '/' + name])
 
 class Shasplit:
 
