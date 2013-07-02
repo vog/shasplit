@@ -41,11 +41,11 @@ class Shasplit:
     def namedir(self, name):
         return os.path.join(self.directory, name)
 
-    def instancedir(self, name, timestamp):
-        return os.path.join(self.namedir(name), timestamp.replace(':', ''))
-
     def names(self):
         return sorted(name for name in os.listdir(self.directory) if name != '.data')
+
+    def instancedir(self, name, timestamp):
+        return os.path.join(self.namedir(name), timestamp.replace(':', ''))
 
     def timestamps(self, name):
         return sorted(
