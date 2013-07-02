@@ -154,13 +154,10 @@ class Shasplit:
     def check(self):
         raise NotImplementedError()
 
-    def recover(self, name, timestamp, output_io):
+    def recover_nosizecheck(self, name, timestamp, output_io):
         name = self.validate_name(name)
         timestamp = self.validate_timestamp(timestamp)
         logging.debug('Recovering %r at %r', name, timestamp)
-        size, expected_size = self.sizes(name, timestamp)
-        if size != expected_size:
-            raise RuntimeError('Incomplete backup: expected size %r, actual size %r' % (expected_size, size))
         hash_total = hashlib.new(self.algorithm)
         for partfile in self.partfiles(name, timestamp):
             logging.debug('Reading from %r', partfile)
@@ -173,12 +170,20 @@ class Shasplit:
         if hash_total.hexdigest() != expected_hash:
             raise RuntimeError('Integrity error: expected hash %r, actual hash %r' % (expected_hash, hash_total.hexdigest()))
 
+    def recover(self, name, timestamp, output_io):
+        name = self.validate_name(name)
+        timestamp = self.validate_timestamp(timestamp)
+        size, expected_size = self.sizes(name, timestamp)
+        if size != expected_size:
+            raise RuntimeError('Incomplete backup: expected size %r, actual size %r' % (expected_size, size))
+        self.recover_nosizecheck(name, timestamp, output_io)
+
     def recover_latest(self, name, output_io):
         name = self.validate_name(name)
         completed = [timestamp for timestamp, size, expected_size in self.timestamps(name) if size == expected_size]
         if len(completed) == 0:
             raise RuntimeError('No completed backup available')
-        self.recover(name, max(completed), output_io)
+        self.recover_nosizecheck(name, max(completed), output_io)
 
     def validate_algorithm(self, algorithm):
         algorithm = str(algorithm)
