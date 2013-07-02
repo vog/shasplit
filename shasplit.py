@@ -176,6 +176,8 @@ class Shasplit:
     def recover_latest(self, name, output_io):
         name = self.validate_name(name)
         completed = [timestamp for timestamp, size, expected_size in self.timestamps(name) if size == expected_size]
+        if len(completed) == 0:
+            raise RuntimeError('No completed backup available')
         self.recover(name, max(completed), output_io)
 
     def validate_algorithm(self, algorithm):
