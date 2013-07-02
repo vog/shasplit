@@ -311,8 +311,8 @@ class Shasplit:
             raise TypeError('Volume group must not be empty')
         if os.path.dirname(volumegroup) != '':
             raise TypeError('Volume group must not have a directory component')
-        if volumegroup[0] == '.':
-            raise TypeError('Volume group must not start with "."')
+        if volumegroup[0] in '.-':
+            raise TypeError('Volume group must not start with "." or "-"')
         return volumegroup
 
 def main():
