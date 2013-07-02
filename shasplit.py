@@ -136,7 +136,7 @@ class Shasplit:
         # Remove symlinks and instance directories, remember hashes of used data files
         hexdigests = set()
         for name, timestamp in instances:
-            logging.info('Removing obsolete backup of %r at %r', name, timestamp)
+            logging.debug('Removing obsolete backup of %r at %r', name, timestamp)
             partdirs = set()
             for partfile in self.partfiles(name, timestamp):
                 hexdigest = self.hash_of_filename(os.readlink(partfile))
@@ -183,7 +183,7 @@ class Shasplit:
         if input_io == sys.stdin:
             logging.info('Reading from stdin')
         else:
-            logging.info('Reading from %r', input_io.name)
+            logging.debug('Reading from %r', input_io.name)
         hash_total = hashlib.new(self.algorithm)
         size_total = 0
         for partnr in itertools.count(0):
@@ -221,7 +221,7 @@ class Shasplit:
         proc.communicate()
 
     def lvcreate(self, volumegroup, name, snapshot, snapshotsize):
-        logging.info('Creating snapshot %r/%r', volumegroup, snapshot)
+        logging.debug('Creating snapshot %r/%r', volumegroup, snapshot)
         args = ['lvcreate', '-s', volumegroup + '/' + name, '-n', snapshot, '-L', str(snapshotsize) + 'B']
         proc = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         out, _ = proc.communicate()
@@ -229,7 +229,7 @@ class Shasplit:
             raise RuntimeError('%s failed: %r' % (args[0], out.strip()))
 
     def lvremove(self, volumegroup, name):
-        logging.info('Removing logical volume %r/%r', volumegroup, name)
+        logging.debug('Removing logical volume %r/%r', volumegroup, name)
         args = ['lvremove', '-f', volumegroup + '/' + name]
         proc = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         out, _ = proc.communicate()
