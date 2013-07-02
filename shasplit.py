@@ -202,7 +202,7 @@ class Shasplit:
         self.write_file(os.path.join(instancedir, 'size'), '%d\n' % (size_total,))
         self.remove_obsolete(name, maxbackups)
 
-    def add_lvm(self, volumegroup, name, maxbackups, input_io):
+    def add_lvm(self, volumegroup, name, maxbackups):
         volumegroup = self.validate_volumegroup(volumegroup)
         name = self.validate_name(name)
         maxbackups = self.validate_maxbackups(maxbackups)
@@ -320,7 +320,7 @@ def main():
     shasplit = Shasplit()
     commands = {
         ('add', 2): (shasplit.add, [sys.stdin]),
-        ('add', 3): (shasplit.add_lvm, [sys.stdin]),
+        ('add', 3): (shasplit.add_lvm, []),
         ('check', 0): (shasplit.check, []),
         ('status', 0): (shasplit.status, []),
         ('recover', 1): (shasplit.recover_latest, [sys.stdout]),
