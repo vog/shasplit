@@ -69,7 +69,8 @@ class Shasplit:
             partsize = os.path.getsize(partfile)
             logging.debug('Size of %r is %r', partfile, partsize)
             size += partsize
-        with open(os.path.join(self.instancedir(name, timestamp), 'size'), 'rb') as f:
+        instancedir = self.instancedir(name, timestamp)
+        with open(os.path.join(instancedir, 'size'), 'rb') as f:
             expected_size = int(f.read())
         if expected_size < 0:
             raise ValueError('Negative expected size: %r' % (expected_size,))
