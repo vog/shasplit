@@ -38,6 +38,10 @@ class Shasplit:
     def hash_filename(self, hexdigest):
         return os.path.join('.data', hexdigest[:3], hexdigest[3:])
 
+    def hash_of_filename(self, filename):
+        datadir, hash1, hash2 = filename.rsplit(os.path.sep, 2)
+        return hash1 + hash2
+
     def namedir(self, name):
         return os.path.join(self.directory, name)
 
@@ -111,7 +115,55 @@ class Shasplit:
         name = self.validate_name(name)
         maxbackups = self.validate_maxbackups(maxbackups)
         logging.debug('Removing obsolete backups of %r while keeping at most %r backups', name, maxbackups)
-        # TODO: Implement this
+        # Find all obsolete instances
+        instances = []
+        num_completed = 0
+        for timestamp in self.timestamps(name):
+            if num_completed < maxbackups:
+                size, expected_size = self.sizes(name, timestamp)
+                if size == expected_size:
+                    num_completed += 1
+            else:
+                instances.append((name, timestamp))
+        # Remove symlinks and instance directories, remember hashes of used data files
+        hexdigests = set()
+        for name, timestamp in instances:
+            logging.info('Removing obsolete backup of %r at %r', name, timestamp)
+            partdirs = set()
+            for partfile in self.partfiles(name, timestamp):
+                hexdigest = self.hash_of_filename(os.readlink(partfile))
+                hexdigests.add(hexdigest)
+                partdirs.add(os.path.dirname(partfile))
+                os.remove(partfile)
+            for partdir in partdirs:
+                os.rmdir(partdir)
+            for requiredfile in self.requiredfiles(name, timestamp):
+                if os.path.exists(requiredfile):
+                    os.remove(requiredfile)
+            os.rmdir(self.instancedir(name, timestamp))
+        # Check which data files are still used
+        for name in self.names():
+            for timestamp in self.timestamps(name):
+                for partfile in self.partfiles(name, timestamp):
+                    hexdigest = self.hash_of_filename(os.readlink(partfile))
+                    hexdigests.discard(hexdigest)
+        # Remove unused data files
+        rel_data_dirnames = set()
+        for hexdigest in hexdigests:
+            rel_data_filename = self.hash_filename(hexdigest)
+            rel_data_dirnames.add(os.path.dirname(rel_data_filename))
+            data_filename = os.path.join(self.directory, rel_data_filename)
+            if os.path.exists(data_filename):
+                logging.debug('Removing data file %r', data_filename)
+                os.remove(data_filename)
+        # Remove empty data directories
+        for rel_data_dirname in rel_data_dirnames:
+            data_dirname = os.path.join(self.directory, rel_data_dirname)
+            try:
+                os.rmdir(data_dirname)
+                logging.debug('Removed empty data directory %r', data_dirname)
+            except OSError, e:
+                pass
 
     def add(self, name, maxbackups, input_io):
         name = self.validate_name(name)
