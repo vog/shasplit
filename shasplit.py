@@ -25,14 +25,18 @@ import logging
 import os
 import os.path
 import re
+import subprocess
 import sys
 
 class Shasplit:
 
-    def __init__(self, algorithm='sha1', partsize=1024*1024, maxparts=1000000, directory='~/.shasplit'):
+    def __init__(self, algorithm='sha1', partsize=1024*1024, maxparts=1000000, directory='~/.shasplit',
+                 snapshotsuffix='_shasplit', snapshotsize=128*1024*1024):
         self.algorithm = self.validate_algorithm(algorithm)
         self.partsize = self.validate_partsize(partsize)
         self.maxparts = self.validate_maxparts(maxparts)
+        self.snapshotsuffix = self.validate_snapshotsuffix(snapshotsuffix)
+        self.snapshotsize = self.validate_snapshotsize(snapshotsize)
         self.directory = os.path.expanduser(directory)
 
     def hash_filename(self, hexdigest):
@@ -206,11 +210,38 @@ class Shasplit:
         self.write_file(os.path.join(instancedir, 'size'), '%d\n' % (size_total,))
         self.remove_obsolete(name, maxbackups)
 
+    def sync(self):
+        proc = subprocess.Popen(['sync'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        proc.communicate()
+
+    def lvcreate(self, volumegroup, name, snapshot, snapshotsize):
+        logging.info('Creating snapshot %s/%s', volumegroup, snapshot)
+        args = ['lvcreate', '-s', volumegroup + '/' + name, '-n', snapshot, '-L', str(snapshotsize) + 'B']
+        proc = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        out, _ = proc.communicate()
+        if proc.returncode != 0:
+            raise RuntimeError('%s failed: %s' % (args[0], out.strip()))
+
+    def lvremove(self, volumegroup, name):
+        logging.info('Removing logical volume %s/%s', volumegroup, name)
+        args = ['lvremove', '-f', volumegroup + '/' + name]
+        proc = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        out, _ = proc.communicate()
+        if proc.returncode != 0:
+            raise RuntimeError('%s failed: %s' % (args[0], out.strip()))
+
     def add_lvm(self, volumegroup, name, maxbackups):
         volumegroup = self.validate_volumegroup(volumegroup)
         name = self.validate_name(name)
         maxbackups = self.validate_maxbackups(maxbackups)
-        raise NotImplementedError()
+        self.sync()
+        snapshot = name + self.snapshotsuffix
+        self.lvcreate(volumegroup, name, snapshot, self.snapshotsize)
+        try:
+            with open(os.path.join('/dev', volumegroup, snapshot), 'rb') as input_io:
+                self.add(name, maxbackups, input_io)
+        finally:
+            self.lvremove(volumegroup, snapshot)
 
     def status(self):
         for name in sorted(self.names()):
@@ -295,6 +326,8 @@ class Shasplit:
             raise TypeError('Name must not have a directory component')
         if name[0] in '._':
             raise TypeError('Name must not start with "." or "_"')
+        if name.endswith(self.snapshotsuffix):
+            raise TypeError('Name must not end with %r' % (self.snapshotsuffix,))
         return name
 
     def validate_partsize(self, partsize):
@@ -302,6 +335,20 @@ class Shasplit:
         if not (partsize > 0):
             raise TypeError('Part size must be positive')
         return partsize
+
+    def validate_snapshotsize(self, snapshotsize):
+        snapshotsize = int(snapshotsize)
+        if not (snapshotsize > 0):
+            raise TypeError('Snapshot size must be positive')
+        return snapshotsize
+
+    def validate_snapshotsuffix(self, snapshotsuffix):
+        snapshotsuffix = str(snapshotsuffix)
+        if len(snapshotsuffix) < 1:
+            raise TypeError('Snapshot suffix must not be empty')
+        if os.path.dirname(snapshotsuffix) != '':
+            raise TypeError('Snapshot suffix must not have a directory component')
+        return snapshotsuffix
 
     def validate_timestamp(self, timestamp):
         timestamp = str(timestamp)
