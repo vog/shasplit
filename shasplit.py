@@ -207,10 +207,9 @@ class Shasplit:
         for timestamp in self.timestamps(name):
             size, expected_size = self.sizes(name, timestamp)
             if size == expected_size:
-                completed.append(timestamp)
-        if len(completed) == 0:
-            raise RuntimeError('No completed backup available')
-        self.recover_nosizecheck(name, completed[0], output_io)
+                self.recover_nosizecheck(name, timestamp, output_io)
+                return
+        raise RuntimeError('No completed backup available')
 
     def validate_algorithm(self, algorithm):
         algorithm = str(algorithm)
