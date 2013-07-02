@@ -333,8 +333,8 @@ class Shasplit:
             raise TypeError('Name must not be empty')
         if os.path.dirname(name) != '':
             raise TypeError('Name must not have a directory component')
-        if name[0] in '._':
-            raise TypeError('Name must not start with "." or "_"')
+        if name[0] in '._-':
+            raise TypeError('Name must not start with ".", "_" or "-"')
         if name.endswith(self.snapshotsuffix):
             raise TypeError('Name must not end with %r' % (self.snapshotsuffix,))
         return name
