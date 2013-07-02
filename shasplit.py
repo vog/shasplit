@@ -50,10 +50,9 @@ class Shasplit:
         return os.path.join(self.namedir(name), timestamp.replace(':', ''))
 
     def timestamps(self, name):
-        return (
-            timestampdir[:13] + ':' + timestampdir[13:15] + ':' + timestampdir[15:]
-            for timestampdir in os.listdir(self.namedir(name))
-        )
+        for timestampdir in os.listdir(self.namedir(name)):
+            timestamp = timestampdir[:13] + ':' + timestampdir[13:15] + ':' + timestampdir[15:]
+            yield timestamp
 
     def partfiles(self, name, timestamp):
         instancedir = self.instancedir(name, timestamp)
