@@ -55,10 +55,12 @@ class Shasplit:
             yield os.path.join(instancedir, requiredfile_name)
 
     def timestamps(self, name):
-        for timestampdir in os.listdir(self.namedir(name)):
-            timestamp = timestampdir[:13] + ':' + timestampdir[13:15] + ':' + timestampdir[15:]
-            size, expected_size = self.sizes(name, timestamp)
-            yield timestamp, size, expected_size
+        timestamps = [
+            timestampdir[:13] + ':' + timestampdir[13:15] + ':' + timestampdir[15:]
+            for timestampdir in os.listdir(self.namedir(name))
+        ]
+        timestamps.sort(reverse=True)
+        return timestamps
 
     def partfiles(self, name, timestamp):
         instancedir = self.instancedir(name, timestamp)
@@ -155,7 +157,8 @@ class Shasplit:
     def status(self):
         for name in sorted(self.names()):
             logging.info('%s', name)
-            for timestamp, size, expected_size in sorted(self.timestamps(name), reverse=True):
+            for timestamp in self.timestamps(name):
+                size, expected_size = self.sizes(name, timestamp)
                 if size == expected_size:
                     completeness = ''
                 else:
@@ -200,10 +203,14 @@ class Shasplit:
 
     def recover_latest(self, name, output_io):
         name = self.validate_name(name)
-        completed = [timestamp for timestamp, size, expected_size in self.timestamps(name) if size == expected_size]
+        completed = []
+        for timestamp in self.timestamps(name):
+            size, expected_size = self.sizes(name, timestamp)
+            if size == expected_size:
+                completed.append(timestamp)
         if len(completed) == 0:
             raise RuntimeError('No completed backup available')
-        self.recover_nosizecheck(name, max(completed), output_io)
+        self.recover_nosizecheck(name, completed[0], output_io)
 
     def validate_algorithm(self, algorithm):
         algorithm = str(algorithm)
