@@ -65,7 +65,7 @@ class Shasplit:
     def sizes(self, name, timestamp):
         size = 0
         for partfile in self.partfiles(name, timestamp):
-            partsize = os.stat(partfile).st_size
+            partsize = os.path.getsize(partfile)
             logging.debug('Size of %r is %r', partfile, partsize)
             size += partsize
         with open(os.path.join(self.instancedir(name, timestamp), 'size'), 'rb') as f:
@@ -121,7 +121,7 @@ class Shasplit:
             symlink_filename = os.path.join(instancedir, part[:dirlen], part[dirlen:])
             self.symlink(target, symlink_filename)
             data_filename = os.path.join(self.directory, self.hash_filename(hexdigest))
-            if os.path.exists(data_filename) and os.stat(data_filename).st_size == len(data):
+            if os.path.exists(data_filename) and os.path.getsize(data_filename) == len(data):
                 logging.debug('Skipping existing complete data file %r', data_filename)
             else:
                 self.write_file(data_filename, data)
