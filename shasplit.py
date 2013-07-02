@@ -175,7 +175,8 @@ class Shasplit:
 
     def recover_latest(self, name, output_io):
         name = self.validate_name(name)
-        self.recover(name, max(self.timestamps(name)), output_io)
+        timestamp = max(self.timestamps(name))
+        self.recover(name, timestamp, output_io)
 
     def validate_algorithm(self, algorithm):
         algorithm = str(algorithm)
