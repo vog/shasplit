@@ -52,7 +52,8 @@ class Shasplit:
     def timestamps(self, name):
         for timestampdir in os.listdir(self.namedir(name)):
             timestamp = timestampdir[:13] + ':' + timestampdir[13:15] + ':' + timestampdir[15:]
-            yield timestamp
+            size, expected_size = self.sizes(name, timestamp)
+            yield timestamp, size, expected_size
 
     def partfiles(self, name, timestamp):
         instancedir = self.instancedir(name, timestamp)
@@ -139,8 +140,7 @@ class Shasplit:
     def status(self):
         for name in sorted(self.names()):
             logging.info('%s', name)
-            for timestamp in sorted(self.timestamps(name)):
-                size, expected_size = self.sizes(name, timestamp)
+            for timestamp, size, expected_size in sorted(self.timestamps(name)):
                 if size == expected_size:
                     completeness = ''
                 else:
@@ -175,7 +175,7 @@ class Shasplit:
 
     def recover_latest(self, name, output_io):
         name = self.validate_name(name)
-        timestamp = max(self.timestamps(name))
+        timestamp = max(timestamp for timestamp, size, expected_size in self.timestamps(name))
         self.recover(name, timestamp, output_io)
 
     def validate_algorithm(self, algorithm):
