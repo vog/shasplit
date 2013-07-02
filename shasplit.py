@@ -155,7 +155,7 @@ class Shasplit:
     def status(self):
         for name in sorted(self.names()):
             logging.info('%s', name)
-            for timestamp, size, expected_size in sorted(self.timestamps(name)):
+            for timestamp, size, expected_size in sorted(self.timestamps(name), reverse=True):
                 if size == expected_size:
                     completeness = ''
                 else:
