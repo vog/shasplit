@@ -105,7 +105,6 @@ class Shasplit:
         name = self.validate_name(name)
         maxbackups = self.validate_maxbackups(maxbackups)
         logging.debug('Adding to %r while keeping at most %r backups', name, maxbackups)
-        # TODO: Status
         # TODO: Max Backups + Clean
         timestamp = self.validate_timestamp(datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'))
         instancedir = self.instancedir(name, timestamp)
@@ -136,7 +135,6 @@ class Shasplit:
         self.write_file(os.path.join(instancedir, 'hash'), '%s\n' % (hash_total.hexdigest(),))
         self.write_file(os.path.join(instancedir, 'size'), '%d\n' % (size_total,))
         # TODO: Max Backups + Clean
-        # TODO: Status
 
     def add_lvm(self, volumegroup, name, maxbackups, input_io):
         volumegroup = self.validate_volumegroup(volumegroup)
