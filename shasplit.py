@@ -49,6 +49,11 @@ class Shasplit:
     def instancedir(self, name, timestamp):
         return os.path.join(self.namedir(name), timestamp.replace(':', ''))
 
+    def requiredfiles(self, name, timestamp):
+        instancedir = self.instancedir(name, timestamp)
+        for requiredfile_name in ['size', 'hash']:
+            yield os.path.join(instancedir, requiredfile_name)
+
     def timestamps(self, name):
         for timestampdir in os.listdir(self.namedir(name)):
             timestamp = timestampdir[:13] + ':' + timestampdir[13:15] + ':' + timestampdir[15:]
@@ -69,13 +74,12 @@ class Shasplit:
             partsize = os.path.getsize(partfile)
             logging.debug('Size of %r is %r', partfile, partsize)
             size += partsize
-        instancedir = self.instancedir(name, timestamp)
-        for requiredfile_name in ['size', 'hash']:
-            requiredfile = os.path.join(instancedir, requiredfile_name)
+        for requiredfile in self.requiredfiles(name, timestamp):
             if not os.path.exists(requiredfile):
                 logging.debug('Missing required file %r', requiredfile)
                 expected_size = None
                 return size, expected_size
+        instancedir = self.instancedir(name, timestamp)
         with open(os.path.join(instancedir, 'size'), 'rb') as f:
             expected_size = int(f.read())
         if expected_size < 0:
