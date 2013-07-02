@@ -184,6 +184,8 @@ class Shasplit:
             raise RuntimeError('Directory already exists: %r' % (instancedir,))
         if input_io == sys.stdin:
             logging.info('Reading from stdin')
+        else:
+            logging.info('Reading from %r', input_io.name)
         hash_total = hashlib.new(self.algorithm)
         size_total = 0
         for partnr in itertools.count(0):
@@ -215,20 +217,20 @@ class Shasplit:
         proc.communicate()
 
     def lvcreate(self, volumegroup, name, snapshot, snapshotsize):
-        logging.info('Creating snapshot %s/%s', volumegroup, snapshot)
+        logging.info('Creating snapshot %r/%r', volumegroup, snapshot)
         args = ['lvcreate', '-s', volumegroup + '/' + name, '-n', snapshot, '-L', str(snapshotsize) + 'B']
         proc = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         out, _ = proc.communicate()
         if proc.returncode != 0:
-            raise RuntimeError('%s failed: %s' % (args[0], out.strip()))
+            raise RuntimeError('%s failed: %r' % (args[0], out.strip()))
 
     def lvremove(self, volumegroup, name):
-        logging.info('Removing logical volume %s/%s', volumegroup, name)
+        logging.info('Removing logical volume %r/%r', volumegroup, name)
         args = ['lvremove', '-f', volumegroup + '/' + name]
         proc = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         out, _ = proc.communicate()
         if proc.returncode != 0:
-            raise RuntimeError('%s failed: %s' % (args[0], out.strip()))
+            raise RuntimeError('%s failed: %r' % (args[0], out.strip()))
 
     def add_lvm(self, volumegroup, name, maxbackups):
         volumegroup = self.validate_volumegroup(volumegroup)
