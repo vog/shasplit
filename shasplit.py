@@ -30,7 +30,7 @@ import sys
 
 class Shasplit:
 
-    def __init__(self, algorithm='sha1', partsize=1024*1024, maxparts=1000000, directory='~/.shasplit',
+    def __init__(self, algorithm='sha1', partsize=1*1024*1024, maxparts=1000000, directory='~/.shasplit',
                  snapshotsuffix='_shasplit', snapshotsize=128*1024*1024):
         self.algorithm = self.validate_algorithm(algorithm)
         self.partsize = self.validate_partsize(partsize)
