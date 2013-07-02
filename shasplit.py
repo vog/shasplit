@@ -53,9 +53,9 @@ class Util:
             proc = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             out, _ = proc.communicate()
             if proc.returncode != 0:
-                raise RuntimeError('Command %r failed: %r' % (' '.join(args), out.strip()))
+                raise RuntimeError('Command %r failed:\n%s' % (' '.join(args), out.strip()))
         except OSError, e:
-            raise RuntimeError('Command %r failed: %r' % (' '.join(args), e))
+            raise RuntimeError('Command %r failed: %s' % (' '.join(args), e))
 
     def sync(self):
         self.run_command(['sync'])
