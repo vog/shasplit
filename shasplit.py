@@ -122,6 +122,8 @@ class Shasplit:
         instancedir = self.instancedir(name, timestamp)
         if os.path.exists(instancedir):
             raise RuntimeError('Directory already exists: %r' % (instancedir,))
+        if input_io == sys.stdin:
+            logging.info('Reading from stdin')
         hash_total = hashlib.new(self.algorithm)
         size_total = 0
         for partnr in itertools.count(0):
@@ -286,8 +288,6 @@ def main():
         func, extra_args = commands[cmd, len(args)]
     except KeyError, e:
         raise ValueError('Invalid arguments')
-    if sys.stdin in extra_args:
-        logging.info('Reading from stdin')
     func(*(args + extra_args))
 
 if __name__ == '__main__':
