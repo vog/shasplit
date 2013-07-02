@@ -173,11 +173,9 @@ class Shasplit:
             except OSError, e:
                 pass
 
-    def add(self, name, maxbackups, input_io):
+    def add_nomaxbackups(self, name, input_io):
         name = self.validate_name(name)
-        maxbackups = self.validate_maxbackups(maxbackups)
-        logging.debug('Adding to %r while keeping at most %r backups', name, maxbackups)
-        self.remove_obsolete(name, maxbackups)
+        logging.debug('Adding to %r', name)
         timestamp = self.validate_timestamp(datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'))
         instancedir = self.instancedir(name, timestamp)
         if os.path.exists(instancedir):
@@ -210,6 +208,12 @@ class Shasplit:
                 self.write_file(data_filename, data)
         self.write_file(os.path.join(instancedir, 'hash'), '%s\n' % (hash_total.hexdigest(),))
         self.write_file(os.path.join(instancedir, 'size'), '%d\n' % (size_total,))
+
+    def add(self, name, maxbackups, input_io):
+        name = self.validate_name(name)
+        maxbackups = self.validate_maxbackups(maxbackups)
+        self.remove_obsolete(name, maxbackups)
+        self.add_nomaxbackups(name)
         self.remove_obsolete(name, maxbackups)
 
     def sync(self):
@@ -236,14 +240,16 @@ class Shasplit:
         volumegroup = self.validate_volumegroup(volumegroup)
         name = self.validate_name(name)
         maxbackups = self.validate_maxbackups(maxbackups)
+        self.remove_obsolete(name, maxbackups)
         self.sync()
         snapshot = name + self.snapshotsuffix
         self.lvcreate(volumegroup, name, snapshot, self.snapshotsize)
         try:
             with open(os.path.join('/dev', volumegroup, snapshot), 'rb') as input_io:
-                self.add(name, maxbackups, input_io)
+                self.add_nomaxbackups(name, input_io)
         finally:
             self.lvremove(volumegroup, snapshot)
+        self.remove_obsolete(name, maxbackups)
 
     def status(self):
         for name in sorted(self.names()):
