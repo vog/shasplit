@@ -216,25 +216,26 @@ class Shasplit:
         self.add_nomaxbackups(name)
         self.remove_obsolete(name, maxbackups)
 
+    def run_command(self, args):
+        logging.debug('Running command %r', args)
+        try:
+            proc = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            out, _ = proc.communicate()
+            if proc.returncode != 0:
+                raise RuntimeError('Command %r failed: %r' % (' '.join(args), out.strip()))
+        except OSError, e:
+            raise RuntimeError('Command %r failed: %r' % (' '.join(args), e))
+
     def sync(self):
-        proc = subprocess.Popen(['sync'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        proc.communicate()
+        self.run_command(['sync'])
 
     def lvcreate(self, volumegroup, name, snapshot, snapshotsize):
         logging.debug('Creating snapshot %r/%r', volumegroup, snapshot)
-        args = ['lvcreate', '-s', volumegroup + '/' + name, '-n', snapshot, '-L', str(snapshotsize) + 'B']
-        proc = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        out, _ = proc.communicate()
-        if proc.returncode != 0:
-            raise RuntimeError('%s failed: %r' % (args[0], out.strip()))
+        self.run_command(['lvcreate', '-s', volumegroup + '/' + name, '-n', snapshot, '-L', str(snapshotsize) + 'B'])
 
     def lvremove(self, volumegroup, name):
         logging.debug('Removing logical volume %r/%r', volumegroup, name)
-        args = ['lvremove', '-f', volumegroup + '/' + name]
-        proc = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        out, _ = proc.communicate()
-        if proc.returncode != 0:
-            raise RuntimeError('%s failed: %r' % (args[0], out.strip()))
+        self.run_command(['lvremove', '-f', volumegroup + '/' + name])
 
     def add_lvm(self, volumegroup, name, maxbackups):
         volumegroup = self.validate_volumegroup(volumegroup)
