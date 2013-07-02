@@ -70,6 +70,12 @@ class Shasplit:
             logging.debug('Size of %r is %r', partfile, partsize)
             size += partsize
         instancedir = self.instancedir(name, timestamp)
+        for requiredfile_name in ['size', 'hash']:
+            requiredfile = os.path.join(instancedir, requiredfile_name)
+            if not os.path.exists(requiredfile):
+                logging.debug('Missing required file %r', requiredfile)
+                expected_size = None
+                return size, expected_size
         with open(os.path.join(instancedir, 'size'), 'rb') as f:
             expected_size = int(f.read())
         if expected_size < 0:
@@ -146,11 +152,16 @@ class Shasplit:
                     completeness = ''
                 else:
                     completeness = '  incomplete'
-                if expected_size == 0:
+                if expected_size is None:
+                    expected_size_s = '(unknown)'
+                    percentage = 0
+                elif expected_size == 0:
+                    expected_size_s = str(expected_size)
                     percentage = 100
                 else:
+                    expected_size_s = str(expected_size)
                     percentage = int(100 * size / expected_size)
-                logging.info('  %s  %d  %3d%%%s', timestamp, expected_size, percentage, completeness)
+                logging.info('  %s  %s  %3d%%%s', timestamp, expected_size_s, percentage, completeness)
 
     def check(self):
         raise NotImplementedError()
