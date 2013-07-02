@@ -101,11 +101,17 @@ class Shasplit:
         logging.debug('Creating symlink %r -> %r', filename, target)
         os.symlink(target, filename)
 
+    def remove_obsolete(self, name, maxbackups):
+        name = self.validate_name(name)
+        maxbackups = self.validate_maxbackups(maxbackups)
+        logging.debug('Removing obsolete backups of %r while keeping at most %r backups', name, maxbackups)
+        # TODO: Implement this
+
     def add(self, name, maxbackups, input_io):
         name = self.validate_name(name)
         maxbackups = self.validate_maxbackups(maxbackups)
         logging.debug('Adding to %r while keeping at most %r backups', name, maxbackups)
-        # TODO: Max Backups + Clean
+        self.remove_obsolete(name, maxbackups)
         timestamp = self.validate_timestamp(datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'))
         instancedir = self.instancedir(name, timestamp)
         if os.path.exists(instancedir):
@@ -134,7 +140,7 @@ class Shasplit:
                 self.write_file(data_filename, data)
         self.write_file(os.path.join(instancedir, 'hash'), '%s\n' % (hash_total.hexdigest(),))
         self.write_file(os.path.join(instancedir, 'size'), '%d\n' % (size_total,))
-        # TODO: Max Backups + Clean
+        self.remove_obsolete(name, maxbackups)
 
     def add_lvm(self, volumegroup, name, maxbackups, input_io):
         volumegroup = self.validate_volumegroup(volumegroup)
