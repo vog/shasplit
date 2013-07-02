@@ -46,9 +46,10 @@ class Shasplit:
         return os.path.join(self.directory, name)
 
     def names(self):
-        for name in os.listdir(self.directory):
-            if name != '.data':
-                yield self.validate_name(name)
+        if os.path.exists(self.directory):
+            for name in os.listdir(self.directory):
+                if name != '.data':
+                    yield self.validate_name(name)
 
     def instancedir(self, name, timestamp):
         return os.path.join(self.namedir(name), timestamp.replace(':', ''))
@@ -59,9 +60,12 @@ class Shasplit:
             yield os.path.join(instancedir, requiredfile_name)
 
     def timestamps(self, name):
+        namedir = self.namedir(name)
+        if not os.path.exists(namedir):
+            return []
         timestamps = [
             timestampdir[:13] + ':' + timestampdir[13:15] + ':' + timestampdir[15:]
-            for timestampdir in os.listdir(self.namedir(name))
+            for timestampdir in os.listdir(namedir)
         ]
         timestamps.sort(reverse=True)
         return timestamps
