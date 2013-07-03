@@ -381,6 +381,9 @@ class Shasplit:
             raise TypeError('Volume group must not start with "." or "-"')
         return volumegroup
 
+def test():
+    raise NotImplementedError()
+
 def main():
     '''Run command line tool'''
     shasplit = Shasplit()
@@ -389,6 +392,7 @@ def main():
         ('add', 3): (shasplit.add_lvm, []),
         ('check', 0): (shasplit.check, []),
         ('status', 0): (shasplit.status, []),
+        ('test', 0): (test, []),
         ('recover', 1): (shasplit.recover_latest, [sys.stdout]),
         ('recover', 2): (shasplit.recover, [sys.stdout]),
     }
