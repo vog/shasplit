@@ -97,12 +97,11 @@
 ln -s $(pwd)/shasplit/shasplit.py ~/bin/shasplit</pre>
     <ul class="remark">
       <li>
-        <p>
-          Or, if you prefer a system-wide installation:
-        </p>
-        <pre>git clone https://github.com/vog/shasplit.git /opt/shasplit
+      <p>
+        Or, if you prefer a system-wide installation:
+      </p>
+      <pre>git clone https://github.com/vog/shasplit.git /opt/shasplit
 ln -s /opt/shasplit/shasplit.py /usr/bin/shasplit</pre>
-      </li>
     </ul>
     <p>
       Shasplit stores everything in the
@@ -111,13 +110,12 @@ ln -s /opt/shasplit/shasplit.py /usr/bin/shasplit</pre>
     </p>
     <ul class="remark">
       <li>
-        <p>
-          If you don't like that,
-          place a symlink to the desired location
-          (here: <q>/backup</q>):
-        </p>
-        <pre>ln -sT /backup ~/.shasplit</pre>
-      </li>
+      <p>
+        If you don't like that,
+        place a symlink to the desired location
+        (here: <q>/backup</q>):
+      </p>
+      <pre>ln -sT /backup ~/.shasplit</pre>
     </ul>
     <p>
       By default, Shasplit splits the data
@@ -137,16 +135,15 @@ ln -s /opt/shasplit/shasplit.py /usr/bin/shasplit</pre>
     <pre>shasplit add foobar 7 &lt; /dev/vg0/foobar</pre>
     <ul class="remark">
       <li>
-        <p>
-          If you backup a running system,
-          don't forget to create a snapshot before backup
-          and to release it afterwards.
-          For LVM volumes,
-          Shasplit takes care of snapshots automatically
-          if you specify the volume group:
-        </p>
-        <pre>shasplit add vg0 foobar 7</pre>
-      </li>
+      <p>
+        If you backup a running system,
+        don't forget to create a snapshot before backup
+        and to release it afterwards.
+        For LVM volumes,
+        Shasplit takes care of snapshots automatically
+        if you specify the volume group:
+      </p>
+      <pre>shasplit add vg0 foobar 7</pre>
     </ul>
     <p>
       If <q>~/.shasplit</q> is located
@@ -172,17 +169,16 @@ ln -s /opt/shasplit/shasplit.py /usr/bin/shasplit</pre>
     <pre>shasplit status</pre>
     <ul class="remark">
       <li>
-        <p>
-          Example output:
-        </p>
-        <pre>foobar
+      <p>
+        Example output:
+      </p>
+      <pre>foobar
   2013-05-23T03:42:42  1073741824  100%
   2013-05-22T03:42:47  1073741824   75%  incomplete
   2013-05-21T03:42:23  1073741824  100%
 raboof
   2013-05-23T03:38:24  (unknown)    0%  incomplete
   2013-05-22T03:38:27  671088640  100%</pre>
-      </li>
     </ul>
     <p>
       Perform a thorough integrity check
@@ -220,12 +216,11 @@ raboof
     <pre>cat */* > /dev/vg0/foobar</pre>
     <ul class="remark">
       <li>
-        <p>
-          In case of <q>Argument list too long</q> errors,
-          do instead:
-        </p>
-        <pre>find . -mindepth 2 | sort | xargs cat > /dev/vg0/foobar</pre>
-      </li>
+      <p>
+        In case of <q>Argument list too long</q> errors,
+        do instead:
+      </p>
+      <pre>find . -mindepth 2 | sort | xargs cat > /dev/vg0/foobar</pre>
     </ul>
     <p>
       Before recovery,
@@ -248,92 +243,83 @@ raboof
       Design goals:
     </p>
     <ol>
-      <li>Trivial recovery by hand via <q>cat</q></li>
-      <li>Integrity check possible by hand</li>
-      <li>Human-readable directory layout</li>
-      <li>Support for large, possibly encrypted, block devices</li>
-      <li>Efficient transfer by standard tools like Rsync, NFS or SSHFS (i.e. reuse repeating parts from previous splits)</li>
-      <li>Fast check for completeness (i.e. robust against interrupted transfers)</li>
-      <li>Avoid creating more than 4096 entries per directory</li>
+      <li>Trivial recovery by hand via <q>cat</q>
+      <li>Integrity check possible by hand
+      <li>Human-readable directory layout
+      <li>Support for large, possibly encrypted, block devices
+      <li>Efficient transfer by standard tools like Rsync, NFS or SSHFS (i.e. reuse repeating parts from previous splits)
+      <li>Fast check for completeness (i.e. robust against interrupted transfers)
+      <li>Avoid creating more than 4096 entries per directory
     </ol>
     <p>
       Base directory layout:
     </p>
     <ul class="tree">
       <li>~/.shasplit/
+      <ul>
+        <li>.data/
+        <li>foobar/
         <ul>
-          <li>.data/</li>
-          <li>foobar/
-            <ul>
-              <li>2013-05-21T034223/</li>
-              <li>2013-05-22T034247/</li>
-              <li>2013-05-23T034242/</li>
-            </ul>
-          </li>
-          <li>raboof/
-            <ul>
-              <li>2013-05-22T033827/</li>
-              <li>2013-05-23T033824/</li>
-            </ul>
-          </li>
+          <li>2013-05-21T034223/
+          <li>2013-05-22T034247/
+          <li>2013-05-23T034242/
         </ul>
-      </li>
+        <li>raboof/
+        <ul>
+          <li>2013-05-22T033827/
+          <li>2013-05-23T033824/
+        </ul>
+      </ul>
     </ul>
     <p>
       Directory layout of each instance:
     </p>
     <ul class="tree">
       <li>~/.shasplit/foobar/2013-05-23T034242/
+      <ul>
+        <li>hash
+        <li>size
+        <li>000/
         <ul>
-          <li>hash</li>
-          <li>size</li>
-          <li>000/
-            <ul>
-              <li>000 &rarr; ../../../.data/dea/6ef7bab6cb210</li>
-              <li>001 &rarr; ../../../.data/39e/fe6a053f13729</li>
-              <li>...</li>
-              <li>999 &rarr; ../../../.data/dea/fa22baa89298e</li>
-            </ul>
-          </li>
-          <li>001/
-            <ul>
-              <li>000 &rarr; ../../../.data/39e/c950863e06cbb</li>
-              <li>001 &rarr; ../../../.data/dea/dbeef00b68016</li>
-              <li>...</li>
-              <li>023 &rarr; ../../../.data/dea/dbeef00b68016</li>
-            </ul>
-          </li>
+          <li>000 &rarr; ../../../.data/dea/6ef7bab6cb210
+          <li>001 &rarr; ../../../.data/39e/fe6a053f13729
+          <li>...
+          <li>999 &rarr; ../../../.data/dea/fa22baa89298e
         </ul>
-      </li>
+        <li>001/
+        <ul>
+          <li>000 &rarr; ../../../.data/39e/c950863e06cbb
+          <li>001 &rarr; ../../../.data/dea/dbeef00b68016
+          <li>...
+          <li>023 &rarr; ../../../.data/dea/dbeef00b68016
+        </ul>
+      </ul>
     </ul>
     <p>
       Directory layout of <q>.data</q>:
     </p>
     <ul class="tree">
       <li>~/.shasplit/.data/
+      <ul>
+        <li>39e/
         <ul>
-          <li>39e/
-            <ul>
-              <li>c950863e06cbb</li>
-              <li>fe6a053f13729</li>
-            </ul>
-          </li>
-          <li>dea/
-            <ul>
-              <li>6ef7bab6cb210</li>
-              <li>dbeef00b68016</li>
-              <li>fa22baa89298e</li>
-            </ul>
-          </li>
+          <li>c950863e06cbb
+          <li>fe6a053f13729
         </ul>
-      </li>
+        <li>dea/
+        <ul>
+          <li>6ef7bab6cb210
+          <li>dbeef00b68016
+          <li>fa22baa89298e
+        </ul>
+      </ul>
     </ul>
     <h2>Related Projects</h2>
     <ul>
-      <li><a href="http://vog.github.com/bscp/">Bscp</a></li>
-      <li><a href="http://www.bouncybouncy.net/programs/blocksync.py">blocksync.py</a></li>
-      <li><a href="http://theshed.hezmatt.org/lvmsync/">lvmsync</a></li>
-      <li><a href="https://github.com/vog/scs">Scs</a></li>
+      <li><a href="http://vog.github.com/bscp/">Bscp</a>
+      <li><a href="http://www.bouncybouncy.net/programs/blocksync.py">blocksync.py</a>
+      <li><a href="http://theshed.hezmatt.org/lvmsync/">lvmsync</a>
+      <li><a href="https://github.com/vog/scs">Scs</a>
     </ul>
     <a href="https://github.com/vog/shasplit" target="_blank">
       <!-- https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png -->
