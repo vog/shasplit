@@ -237,7 +237,7 @@ class Shasplit:
         name = self.validate_name(name)
         maxbackups = self.validate_maxbackups(maxbackups)
         self.remove_obsolete(name, maxbackups)
-        self.add_nomaxbackups(name)
+        self.add_nomaxbackups(name, input_io)
         self.remove_obsolete(name, maxbackups)
 
     def add_lvm(self, volumegroup, name, maxbackups):
