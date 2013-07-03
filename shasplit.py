@@ -126,9 +126,12 @@ class Shasplit:
     def sizes(self, name, timestamp):
         size = 0
         for partfile in self.partfiles(name, timestamp):
-            partsize = os.path.getsize(partfile)
-            logging.debug('Size of %r is %r', partfile, partsize)
-            size += partsize
+            if os.path.exists(partfile):
+                partsize = os.path.getsize(partfile)
+                logging.debug('Size of %r is %r', partfile, partsize)
+                size += partsize
+            else:
+                logging.debug('Part %r does not exist', partfile)
         for requiredfile in self.requiredfiles(name, timestamp):
             if not os.path.exists(requiredfile):
                 logging.debug('Missing required file %r', requiredfile)
