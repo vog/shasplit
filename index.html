@@ -90,7 +90,7 @@
       Have fun!<br>
       <a href="http://www.profv.de/">Volker</a>
     </p>
-    <h2>Preparation</h2>
+    <h2 id="preparation">Preparation</h2>
     <p>
       Installation for a single user (assuming that <q>~/bin</q> is in PATH):
     </p>
@@ -126,7 +126,7 @@ ln -s /opt/shasplit/shasplit.py /usr/bin/shasplit</pre>
       but will work equally well with any other part size and any other strong
       <a href="https://en.wikipedia.org/wiki/Cryptographic_hash_function#Cryptographic_hash_algorithms">secure hash algorithm</a>.
     </p>
-    <h2>Backup</h2>
+    <h2 id="backup">Backup</h2>
     <p>
       Add a new backup
       from <q>/dev/vg0/foobar</q>
@@ -163,7 +163,7 @@ ln -s /opt/shasplit/shasplit.py /usr/bin/shasplit</pre>
       until the new backups are complete:
     </p>
     <pre>rsync -aW --delete-after ~/.shasplit/ backup@backupserver:.shasplit/</pre>
-    <h2>Status and Checks</h2>
+    <h2 id="status">Status and Checks</h2>
     <p>
       Show status information for all instances:
     </p>
@@ -191,7 +191,7 @@ raboof
       Run the internal tests:
     </p>
     <pre>shasplit test</pre>
-    <h2>Recovery</h2>
+    <h2 id="recovery">Recovery</h2>
     <p>
       Recover the latest complete backup of <q>foobar</q> with:
     </p>
@@ -200,7 +200,7 @@ raboof
       Recover the backup of <q>foobar</q> at <q>2013-05-23T03:42:42</q>:
     </p>
     <pre>shasplit recover foobar 2013-05-23T03:42:42 > /dev/vg0/foobar</pre>
-    <h2>Manual Recovery and Checking</h2>
+    <h2 id="manual-recovery">Manual Recovery and Checking</h2>
     <p>
       If Shasplit is not available on the target system,
       it is very simple
@@ -233,13 +233,13 @@ raboof
       To be safe, you can also run an integrity check for that instance by hand:
     </p>
     <pre>cat */* | sha1sum; cat hash</pre>
-    <h2>Debug</h2>
+    <h2 id="debug">Debug</h2>
     <p>
       You can always enable debuging output
       via the <q>SHASPLIT_DEBUG</q> environment variable:
     </p>
     <pre>SHASPLIT_DEBUG=1 shasplit add vg0 foobar 7</pre>
-    <h2>Directory Layout</h2>
+    <h2 id="layout">Directory Layout</h2>
     <p>
       Design goals:
     </p>
@@ -315,7 +315,7 @@ raboof
         </ul>
       </ul>
     </ul>
-    <h2>Related Projects</h2>
+    <h2 id="related">Related Projects</h2>
     <ul>
       <li><a href="http://zbackup.org">ZBackup</a>
       <li><a href="http://theshed.hezmatt.org/lvmsync/">lvmsync</a>
