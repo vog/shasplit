@@ -28,6 +28,10 @@ import re
 import subprocess
 import sys
 
+# Portability fix for Python < 2.7
+if not hasattr(hashlib, 'algorithms'):
+    hashlib.algorithms = ('md5', 'sha1', 'sha224', 'sha256', 'sha384', 'sha512')
+
 class Util:
 
     def write_file(self, filename, data):
