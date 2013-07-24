@@ -120,7 +120,7 @@ ln -s /opt/shasplit/shasplit.py /usr/bin/shasplit</pre>
     </ul>
     <p>
       By default, Shasplit splits the data
-      into parts of size 1&nbsp;MiB
+      into parts of size 256&nbsp;KiB
       and hashes each part with
       <a href="https://en.wikipedia.org/wiki/SHA-1">SHA-1</a>,
       but will work equally well with any other part size and any other strong
@@ -174,9 +174,9 @@ ln -s /opt/shasplit/shasplit.py /usr/bin/shasplit</pre>
         Example output:
       </p>
       <pre>foobar
-  2013-05-23T03:42:42  1073741824  100%
-  2013-05-22T03:42:47  1073741824   75%  incomplete
-  2013-05-21T03:42:23  1073741824  100%
+  2013-05-23T03:42:42  268435456  100%
+  2013-05-22T03:42:47  268435456   75%  incomplete
+  2013-05-21T03:42:23  268435456  100%
 raboof
   2013-05-23T03:38:24  (unknown)    0%  incomplete
   2013-05-22T03:38:27  671088640  100%</pre>
@@ -280,14 +280,14 @@ raboof
       <ul>
         <li>hash
         <li>size
-        <li>000/
+        <li>0000/
         <ul>
           <li>000 &rarr; ../../../.data/dea/6ef7bab6cb210
           <li>001 &rarr; ../../../.data/39e/fe6a053f13729
           <li>...
           <li>999 &rarr; ../../../.data/dea/fa22baa89298e
         </ul>
-        <li>001/
+        <li>0001/
         <ul>
           <li>000 &rarr; ../../../.data/39e/c950863e06cbb
           <li>001 &rarr; ../../../.data/dea/dbeef00b68016
