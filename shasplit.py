@@ -244,12 +244,12 @@ class Shasplit:
             size_total += len(data)
             if partnr >= self.maxparts:
                 raise RuntimeError('Too many parts')
-            dirlen = 3
-            partlen = max(dirlen + 1, len(str(self.maxparts - 1)))
+            filelen = 3
+            partlen = max(filelen + 1, len(str(self.maxparts - 1)))
             part = str(partnr).rjust(partlen, '0')
             hexdigest = hashlib.new(self.algorithm, data).hexdigest()
             target = os.path.join('..', '..', '..', self.hash_filename(hexdigest))
-            symlink_filename = os.path.join(instancedir, part[:dirlen], part[dirlen:])
+            symlink_filename = os.path.join(instancedir, part[:-filelen], part[-filelen:])
             self.util.symlink(target, symlink_filename)
             data_filename = os.path.join(self.directory, self.hash_filename(hexdigest))
             if os.path.exists(data_filename) and os.path.getsize(data_filename) == len(data):
