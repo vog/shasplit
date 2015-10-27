@@ -75,7 +75,7 @@ class Util:
 class Shasplit:
 
     def __init__(self, algorithm='sha1', partsize=4*1024*1024, maxparts=10000*1000, directory='~/.shasplit',
-                 snapshotsuffix='_shasplit', snapshotsize=128*1024*1024):
+                 snapshotsuffix='_shasplit', snapshotsize=1*1024*1024*1024):
         self.util = Util()
         self.algorithm = self.validate_algorithm(algorithm)
         self.partsize = self.validate_partsize(partsize)
