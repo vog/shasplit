@@ -132,7 +132,7 @@ ln -s /opt/shasplit/shasplit.py /usr/bin/shasplit</pre>
       By default, Shasplit splits the data
       into parts of size <a href="https://en.wikipedia.org/wiki/Binary_prefix">4&nbsp;MiB</a>
       and hashes each part with
-      <a href="https://en.wikipedia.org/wiki/SHA-1">SHA-1</a>,
+      <a href="https://en.wikipedia.org/wiki/SHA-2">SHA-256</a>,
       but will work equally well with any other part size and any other strong
       <a href="https://en.wikipedia.org/wiki/Cryptographic_hash_function#Cryptographic_hash_algorithms">secure hash algorithm</a>.
     </p>
@@ -243,7 +243,7 @@ raboof
     <p>
       To be safe, you can also run an integrity check for that instance by hand:
     </p>
-    <pre>cat */* | sha1sum; cat hash</pre>
+    <pre>cat */* | shasum -a 256; cat hash</pre>
     <h2 id="debug">Debug</h2>
     <p>
       You can always enable debuging output
