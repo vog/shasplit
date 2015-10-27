@@ -3,7 +3,7 @@
 '''Shasplit - SHA-based data splitting for efficient backups'''
 
 __copyright__ = '''\
-Copyright (C) 2012, 2013  Volker Grabsch <v@njh.eu>
+Copyright (C) 2012 - 2015  Volker Diels-Grabsch <v@njh.eu>
 
 Permission to use, copy, modify, and/or distribute this software for any
 purpose with or without fee is hereby granted, provided that the above
