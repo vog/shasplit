@@ -64,9 +64,9 @@ class Util:
     def sync(self):
         self.run_command(['/bin/sync'])
 
-    def lvcreate(self, volumegroup, name, snapshot, snapshotsize):
+    def lvcreate(self, volumegroup, name, snapshot, snapshotsize_mb):
         logging.debug('Creating snapshot %r/%r', volumegroup, snapshot)
-        self.run_command(['/sbin/lvcreate', '-s', volumegroup + '/' + name, '-n', snapshot, '-L', str(snapshotsize) + 'B'])
+        self.run_command(['/sbin/lvcreate', '-s', volumegroup + '/' + name, '-n', snapshot, '-L', str(snapshotsize_mb) + 'M'])
 
     def lvremove(self, volumegroup, name):
         logging.debug('Removing logical volume %r/%r', volumegroup, name)
@@ -269,15 +269,15 @@ class Shasplit:
         self.add_nomaxbackups(name, input_io)
         self.remove_obsolete(name, maxbackups)
 
-    def add_lvm(self, volumegroup, name, maxbackups, snapshotsize):
+    def add_lvm(self, volumegroup, name, maxbackups, snapshotsize_mb):
         volumegroup = self.validate_volumegroup(volumegroup)
         name = self.validate_name(name)
         maxbackups = self.validate_maxbackups(maxbackups)
-        snapshotsize = self.validate_snapshotsize(snapshotsize)
+        snapshotsize_mb = self.validate_snapshotsize_mb(snapshotsize_mb)
         self.remove_obsolete(name, maxbackups)
         self.util.sync()
         snapshot = name + self.snapshotsuffix
-        self.util.lvcreate(volumegroup, name, snapshot, snapshotsize)
+        self.util.lvcreate(volumegroup, name, snapshot, snapshotsize_mb)
         try:
             with open(os.path.join('/dev', volumegroup, snapshot), 'rb') as input_io:
                 self.add_nomaxbackups(name, input_io)
@@ -378,11 +378,11 @@ class Shasplit:
             raise TypeError('Part size must be positive')
         return partsize
 
-    def validate_snapshotsize(self, snapshotsize):
-        snapshotsize = int(snapshotsize)
-        if not (snapshotsize > 0):
+    def validate_snapshotsize_mb(self, snapshotsize_mb):
+        snapshotsize_mb = int(snapshotsize_mb)
+        if not (snapshotsize_mb > 0):
             raise TypeError('Snapshot size must be positive')
-        return snapshotsize
+        return snapshotsize_mb
 
     def validate_snapshotsuffix(self, snapshotsuffix):
         snapshotsuffix = str(snapshotsuffix)
@@ -414,10 +414,10 @@ def test():
 def main():
     '''Run command line tool'''
     shasplit = Shasplit()
-    default_snapshotsize = 1*1024*1024*1024
+    default_snapshotsize_mb = 1*1024
     commands = {
         ('add', 2): (shasplit.add, [sys.stdin]),
-        ('add', 3): (shasplit.add_lvm, [default_snapshotsize]),
+        ('add', 3): (shasplit.add_lvm, [default_snapshotsize_mb]),
         ('check', 0): (shasplit.check, []),
         ('status', 0): (shasplit.status, []),
         ('test', 0): (test, []),
