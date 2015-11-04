@@ -75,13 +75,12 @@ class Util:
 class Shasplit:
 
     def __init__(self, algorithm='sha256', partsize=4*1024*1024, maxparts=10000*1000, directory='~/.shasplit',
-                 snapshotsuffix='_shasplit', snapshotsize=1*1024*1024*1024):
+                 snapshotsuffix='_shasplit'):
         self.util = Util()
         self.algorithm = self.validate_algorithm(algorithm)
         self.partsize = self.validate_partsize(partsize)
         self.maxparts = self.validate_maxparts(maxparts)
         self.snapshotsuffix = self.validate_snapshotsuffix(snapshotsuffix)
-        self.snapshotsize = self.validate_snapshotsize(snapshotsize)
         self.directory = os.path.expanduser(directory)
 
     def hash_filename(self, hexdigest):
@@ -270,14 +269,15 @@ class Shasplit:
         self.add_nomaxbackups(name, input_io)
         self.remove_obsolete(name, maxbackups)
 
-    def add_lvm(self, volumegroup, name, maxbackups):
+    def add_lvm(self, volumegroup, name, maxbackups, snapshotsize):
         volumegroup = self.validate_volumegroup(volumegroup)
         name = self.validate_name(name)
         maxbackups = self.validate_maxbackups(maxbackups)
+        snapshotsize = self.validate_snapshotsize(snapshotsize)
         self.remove_obsolete(name, maxbackups)
         self.util.sync()
         snapshot = name + self.snapshotsuffix
-        self.util.lvcreate(volumegroup, name, snapshot, self.snapshotsize)
+        self.util.lvcreate(volumegroup, name, snapshot, snapshotsize)
         try:
             with open(os.path.join('/dev', volumegroup, snapshot), 'rb') as input_io:
                 self.add_nomaxbackups(name, input_io)
@@ -414,9 +414,10 @@ def test():
 def main():
     '''Run command line tool'''
     shasplit = Shasplit()
+    default_snapshotsize = 1*1024*1024*1024
     commands = {
         ('add', 2): (shasplit.add, [sys.stdin]),
-        ('add', 3): (shasplit.add_lvm, []),
+        ('add', 3): (shasplit.add_lvm, [default_snapshotsize]),
         ('check', 0): (shasplit.check, []),
         ('status', 0): (shasplit.status, []),
         ('test', 0): (test, []),
