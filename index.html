@@ -155,6 +155,18 @@ ln -s /opt/shasplit/shasplit.py /usr/bin/shasplit</pre>
         if you specify the volume group:
       </p>
       <pre>shasplit add vg0 foobar 7</pre>
+      <li>
+      <p>
+        The default LVM snapshot size is
+        <a href="https://en.wikipedia.org/wiki/Binary_prefix">1&nbsp;GiB</a>.
+        If this is too small or too large,
+        you can specify the exact snapshot size in MiB
+        as an additional argument.
+        For example,
+        the following command will use
+        an LVM snapshot that is 10&nbsp;GiB (10240&nbsp;MiB) in size:
+      </p>
+      <pre>shasplit add vg0 foobar 7 10240</pre>
     </ul>
     <p>
       If <q>~/.shasplit</q> is located

@@ -418,6 +418,7 @@ def main():
     commands = {
         ('add', 2): (shasplit.add, [sys.stdin]),
         ('add', 3): (shasplit.add_lvm, [default_snapshotsize_mb]),
+        ('add', 4): (shasplit.add_lvm, []),
         ('check', 0): (shasplit.check, []),
         ('status', 0): (shasplit.status, []),
         ('test', 0): (test, []),
