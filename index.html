@@ -85,7 +85,7 @@
       Repeating parts (e.g. from previous split operations)
       are stored only once,
       which allows for efficient incremental backups
-      of whole LVM snapshots via Rsync.
+      of whole LVM snapshots via <a href="https://rsync.samba.org/">rsync</a>.
       Shasplit shows its strengths on encrypted block devices,
       but might be useful for non-encrypted data, too.
     </p>
@@ -177,7 +177,7 @@ ln -s /opt/shasplit/shasplit.py /usr/bin/shasplit</pre>
       directory to the backup system.
     </p>
     <p>
-      When using Rsync,
+      When using <a href="https://rsync.samba.org/">rsync</a>,
       you should use the options
       <q>-W</q> for improved performance
       and
@@ -273,7 +273,11 @@ raboof
       <li>Integrity check possible by hand
       <li>Human-readable directory layout
       <li>Support for large, possibly encrypted, block devices
-      <li>Efficient transfer by standard tools like Rsync, NFS or SSHFS (i.e. reuse repeating parts from previous splits)
+      <li>Efficient transfer by standard tools like
+        <a href="https://rsync.samba.org/">rsync</a>,
+        <a href="https://en.wikipedia.org/wiki/Network_File_System">NFS</a> or
+        <a href="https://en.wikipedia.org/wiki/SSHFS">SSHFS</a> or
+        (i.e. reuse repeating parts from previous splits)
       <li>Fast check for completeness (i.e. robust against interrupted transfers)
       <li>Avoid creating more than 4096 entries per directory
     </ol>
@@ -342,6 +346,7 @@ raboof
     </ul>
     <h2 id="related">Related Projects</h2>
     <ul>
+      <li><a href="https://github.com/systemd/casync">casync</a>
       <li><a href="http://zbackup.org">ZBackup</a>
       <li><a href="https://theshed.hezmatt.org/lvmsync/">lvmsync</a>
       <li><a href="https://www.bouncybouncy.net/programs/blocksync.py">blocksync.py</a>
